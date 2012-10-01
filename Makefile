@@ -1,16 +1,22 @@
-VERSION = 0.0
-CC = gcc
-CFLAGS = -Wall -g -DVERSION=\"$(VERSION)\"
-LDFLAGS = -lrtlsdr 
+DIRS = src src/dab_demod 
 
-SRC_DIR = src/
-INC_DIR = include/
+.PHONY: subdirs $(DIRS)
 
-rtldab: rtldab.o
-	$(CC) -o rtldab rtldab.o $(LDFLAGS)
+subdirs: $(DIRS)
 
-rtldab.o: $(SRC_DIR)rtldab.c $(INC_DIR)rtldab.h
-	$(CC) $(CFLAGS) -I $(INC_DIR) -c $(SRC_DIR)rtldab.c
+$(DIRS): 
+	$(MAKE) -C $@
 
-clean: 
-	rm -rf *.o
+src: src/dab_demod
+
+.PHONY: clean
+clean:
+	@for dir in $(DIRS) ; \
+	do \
+	if [ -f $$dir/Makefile ]; then \
+	(cd $$dir ; \
+	$(MAKE) clean ; \
+	cd ..) ; \
+	fi \
+	done
+
