@@ -1,3 +1,26 @@
+/*
+This file is part of rtl-dab
+trl-dab is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Foobar is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with rtl-dab.  If not, see <http://www.gnu.org/licenses/>.
+
+
+david may 2012
+david.may.muc@googlemail.com
+
+*/
+
+
+
 #include "rtldab.h"
 
 /* RTL Device */
@@ -21,23 +44,24 @@ static void sighandler(int signum)
 
 static void *demod_thread_fn(void *arg)
 {
-  dab_state *dab2 = arg;
+  dab_state *dab = arg;
   while (!do_exit) {
     sem_wait(&data_ready);
-    /* add demod here */	
+    dab_demod(dab);	
   }
   return 0;
 }
 
-static void rtlsdr_callback(unsigned char *buf, uint32_t len, void *ctx)
+static void rtlsdr_callback(uint8_t *buf, uint32_t len, void *ctx)
 {
-  dab_state *dab2 = ctx;
+  dab_state *dab = ctx;
   int dr_val;
   if (do_exit) {
     return;}
   if (!ctx) {
     return;}
-  /* copy data to buffer here */
+  memcpy(dab->input_buffer,buf,len);
+  dab->input_buffer_len = len;
   sem_getvalue(&data_ready, &dr_val);
   if (!dr_val) {
     sem_post(&data_ready);}
