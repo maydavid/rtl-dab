@@ -19,16 +19,20 @@ david.may.muc@googlemail.com
 
 */
 
-#include <errno.h>
-#include <signal.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <unistd.h>
-#include <semaphore.h>
-#include <pthread.h>
-#include "rtl-sdr.h"
-
 
 #include "dab_demod.h"
+
+int8_t dab_demod(dab_state *dab){
+  uint32_t i,j;
+  
+  /* write input data into fifo */
+  for (i=0;i<dab->input_buffer_len;i++) {
+    cbWrite(&(dab->fifo),&dab->input_buffer[i]);
+  }
+  
+  /* Check for data in fifo */
+  if (dab->fifo.count < 196608*3) {
+    return 0;
+  }
+
+}
