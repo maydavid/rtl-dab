@@ -3,7 +3,7 @@ rtl-dab
 
 DAB/DAB+ receiver for use with rtl-sdr sticks
 
-- For the time beeing only Mode I supported
+- For the time being only Mode I supported
 
 # Status:
 
