@@ -1,9 +1,0 @@
-VERSION = 0.0
-CC = gcc
-CFLAGS = -Wall -g -DVERSION=\"$(VERSION)\"
-
-%.o: %.c
-	$(CC) -I$(INC_DIR) $(CFLAGS) -c $<
-
-
-

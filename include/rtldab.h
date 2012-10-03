@@ -32,3 +32,6 @@ david.may.muc@googlemail.com
 
 
 #include "dab_demod.h"
+
+
+#define VERSION 0.0
