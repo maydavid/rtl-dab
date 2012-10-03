@@ -19,19 +19,6 @@ david.may.muc@googlemail.com
 
 */
 
-#include <errno.h>
-#include <signal.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include <unistd.h>
-#include <semaphore.h>
-#include <pthread.h>
-#include "rtl-sdr.h"
+#include "dab_fifo.h"
 
-
-#include "dab_demod.h"
-
-
-#define VERSION "0.0"
+int32_t dab_read_fifo(CircularBuffer * fifo,uint32_t bytes,int32_t shift,uint8_t * buffer);

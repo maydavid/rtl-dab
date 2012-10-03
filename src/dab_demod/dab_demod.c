@@ -34,5 +34,36 @@ int8_t dab_demod(dab_state *dab){
   if (dab->fifo.count < 196608*3) {
     return 0;
   }
+  
+  /* read fifo */
+  dab_read_fifo(&dab->fifo,196608*2,dab->coarse_timeshift+dab->fine_timeshift,dab->input_buffer);
+  
+  /* resetting coarse timeshift */
+  dab->coarse_timeshift = 0;
 
+  /* complex data conversion */
+  for (j=0;j<196608*2;j+=2){
+    dab->real[j/2]=dab->input_buffer[j]-127;
+    dab->imag[j/2]=dab->input_buffer[j+1]-127;
+  }
+  
+  /* coarse time sync */
+  dab->coarse_timeshift = dab_coarse_time_sync(dab->real,dab->input_buffer,dab->filt);
+
+  /* create complex frame */
+  for (j=0;j<196608;j++){
+    dab->dab_frame[j][0] = dab->real[j];
+    dab->dab_frame[j][1] = dab->imag[j];
+  }
+
+return 1;
+
+}
+
+
+void dab_demod_init(dab_state * dab){
+  cbInit(&(dab->fifo),(196608*2*4)); // 4 frames
+  dab->coarse_timeshift = 0;
+  dab->fine_timeshift=0;
+  dab->dab_frame = ( fftw_complex* ) fftw_malloc( sizeof( fftw_complex ) * 196608 );
 }

@@ -72,7 +72,7 @@ int main (int argc, char **argv)
 {
   struct sigaction sigact;
   uint32_t dev_index = 0;
-  uint32_t device_count;
+  int32_t device_count;
   int i,r;
   char vendor[256], product[256], serial[256];
   uint32_t samp_rate = 2048000;
@@ -173,7 +173,7 @@ int main (int argc, char **argv)
   /*-----------------------------------------------
   / start demod thread & rtl read 
   -----------------------------------------------*/
-  //dab_demod_init(&dab);
+  dab_demod_init(&dab);
   pthread_create(&demod_thread, NULL, demod_thread_fn, (void *)(&dab));
   rtlsdr_read_async(dev, rtlsdr_callback, (void *)(&dab),
 			      DEFAULT_ASYNC_BUF_NUMBER, DEFAULT_BUF_LENGTH);

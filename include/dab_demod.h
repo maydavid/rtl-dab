@@ -21,7 +21,9 @@ david.may.muc@googlemail.com
 
 
 #include <stdint.h>
-#include "dab_fifo.h"
+#include <fftw3.h>
+#include "dab_read_fifo.h"
+#include "dab_sync.h"
 
 
 #define DEFAULT_BUF_LENGTH (16 * 16384)
@@ -30,8 +32,15 @@ typedef struct{
   uint32_t frequency;
   uint8_t input_buffer[DEFAULT_BUF_LENGTH];
   uint16_t input_buffer_len;
+  int32_t coarse_timeshift;
+  int32_t fine_timeshift;
   CircularBuffer fifo;
+  int8_t real[196608];
+  int8_t imag[196608];
+  float filt[196608-2662];
+  fftw_complex * dab_frame;
 }dab_state;
 
 
 int8_t dab_demod(dab_state *dab);
+void dab_demod_init(dab_state *dab);

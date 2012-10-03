@@ -10,6 +10,7 @@ ADD_DEFINITIONS(-Wsign-compare)
 add_definitions(-fvisibility=hidden)
 
 find_package(Threads)
+#find_package(FFTW)
 
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
