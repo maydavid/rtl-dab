@@ -29,14 +29,14 @@ int8_t dab_demod(dab_state *dab){
   for (i=0;i<dab->input_buffer_len;i++) {
     cbWrite(&(dab->fifo),&dab->input_buffer[i]);
   }
-  
+
   /* Check for data in fifo */
   if (dab->fifo.count < 196608*3) {
     return 0;
   }
   
   /* read fifo */
-  dab_read_fifo(&dab->fifo,196608*2,dab->coarse_timeshift+dab->fine_timeshift,dab->input_buffer);
+  dab_read_fifo(&(dab->fifo),196608*2,dab->coarse_timeshift+dab->fine_timeshift,dab->buffer);
   
   /* resetting coarse timeshift */
   dab->coarse_timeshift = 0;
@@ -48,6 +48,7 @@ int8_t dab_demod(dab_state *dab){
   }
   
   /* coarse time sync */
+  /* performance bottleneck atm */
   dab->coarse_timeshift = dab_coarse_time_sync(dab->real,dab->input_buffer,dab->filt);
 
   /* create complex frame */
@@ -78,7 +79,7 @@ int8_t dab_demod(dab_state *dab){
 
   /* fine freq correction */
   dab->fine_freq_shift = dab_fine_freq_corr(dab->dab_frame,dab->fine_timeshift);
-
+  
   
 
 return 1;

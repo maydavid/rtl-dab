@@ -35,6 +35,9 @@ static sem_t data_ready;
 #define DEFAULT_ASYNC_BUF_NUMBER 32
 
 
+uint32_t corr_counter;
+
+
 static void sighandler(int signum)
 {
   fprintf(stderr, "Signal caught, exiting!\n");
@@ -47,7 +50,18 @@ static void *demod_thread_fn(void *arg)
   dab_state *dab = arg;
   while (!do_exit) {
     sem_wait(&data_ready);
-    dab_demod(dab);	
+    dab_demod(dab);
+    if (abs(dab->fine_freq_shift) > 20 && abs(dab->coarse_freq_shift) > 1) {
+      corr_counter++;
+      if (corr_counter > 10) {
+	corr_counter = 0 ;
+	dab->frequency = dab->frequency - dab->fine_freq_shift + dab->coarse_freq_shift*1000;
+	rtlsdr_set_center_freq(dev,dab->frequency);
+	fprintf(stderr,"new center freq : %i\n",rtlsdr_get_center_freq(dev));
+	fprintf(stderr,"cfs : %i\n",dab->coarse_freq_shift);
+	fprintf(stderr,"ffs : %f\n",dab->fine_freq_shift);
+      }
+    }
   }
   return 0;
 }

@@ -31,7 +31,8 @@ david.may.muc@googlemail.com
 typedef struct{
   uint32_t frequency;
   uint8_t input_buffer[DEFAULT_BUF_LENGTH];
-  uint16_t input_buffer_len;
+  uint32_t input_buffer_len;
+  uint8_t buffer[196608*2];
   int32_t coarse_timeshift;
   int32_t fine_timeshift;
   uint32_t coarse_freq_shift;
