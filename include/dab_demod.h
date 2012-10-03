@@ -24,6 +24,7 @@ david.may.muc@googlemail.com
 #include <fftw3.h>
 #include "dab_read_fifo.h"
 #include "dab_sync.h"
+#include "dab_fic_descramble.h"
 
 
 #define DEFAULT_BUF_LENGTH (16 * 16384)
@@ -47,6 +48,20 @@ typedef struct{
   fftw_complex * prs_syms;
   /* raw symbols */
   fftw_complex symbols[76][2048];
+  /* symbols d-qpsk-ed */
+  fftw_complex * symbols_d;
+  /* symbols d-qpsk-ed only data carriers */
+  fftw_complex * symbols_dc;
+  /* symbols freq de-interleaved */
+  fftw_complex * symbols_dc_fd;
+  /* symbols demapped */
+  uint8_t symbols_demapped[75][1536*2];
+  /* FIC (3 symbols) */
+  uint8_t FIC[1536*2*3];
+  uint8_t FIC_dep[3096*4];
+  uint8_t FIC_dep_dec[768*4];
+  uint8_t FIC_dep_dec_scr[768*4];
+  int f_interl_table[2048];
 }dab_state;
 
 
