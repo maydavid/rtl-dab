@@ -56,6 +56,31 @@ int8_t dab_demod(dab_state *dab){
     dab->dab_frame[j][1] = dab->imag[j];
   }
 
+  /* fine time sync */
+  dab->fine_timeshift = dab_fine_time_sync(dab->dab_frame,dab->prs_ifft);
+
+  /* coarse_frequency shift */
+  fftw_plan p;
+  p = fftw_plan_dft_1d(2048, &dab->dab_frame[2656+504+dab->fine_timeshift], dab->symbols[0], FFTW_FORWARD, FFTW_ESTIMATE);
+  fftw_execute(p);
+  fftw_complex tmp;
+  for (i = 0; i < 2048/2; i++)
+    {
+      tmp[0]     = dab->symbols[0][i][0];
+      tmp[1]     = dab->symbols[0][i][1];
+      dab->symbols[0][i][0]    = dab->symbols[0][i+2048/2][0];
+      dab->symbols[0][i][1]    = dab->symbols[0][i+2048/2][1];
+      dab->symbols[0][i+2048/2][0] = tmp[0];
+      dab->symbols[0][i+2048/2][1] = tmp[1];
+    }
+  dab->coarse_freq_shift = dab_coarse_freq_sync(dab->symbols[0]);
+
+
+  /* fine freq correction */
+  dab->fine_freq_shift = dab_fine_freq_corr(dab->dab_frame,dab->fine_timeshift);
+
+  
+
 return 1;
 
 }
@@ -66,4 +91,9 @@ void dab_demod_init(dab_state * dab){
   dab->coarse_timeshift = 0;
   dab->fine_timeshift=0;
   dab->dab_frame = ( fftw_complex* ) fftw_malloc( sizeof( fftw_complex ) * 196608 );
+  dab->prs_ifft =( fftw_complex*) fftw_malloc(sizeof(fftw_complex) * (2048 + 32));
+  dab->prs_conj_ifft = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * (2048 + 32));
+  dab->prs_syms = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * (2048 + 32));
+  prsgen(dab->prs_ifft,dab->prs_conj_ifft,dab->prs_syms);
+
 }

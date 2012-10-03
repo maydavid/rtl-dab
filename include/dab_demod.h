@@ -34,11 +34,18 @@ typedef struct{
   uint16_t input_buffer_len;
   int32_t coarse_timeshift;
   int32_t fine_timeshift;
+  uint32_t coarse_freq_shift;
+  double fine_freq_shift;
   CircularBuffer fifo;
   int8_t real[196608];
   int8_t imag[196608];
   float filt[196608-2662];
   fftw_complex * dab_frame;
+  fftw_complex * prs_ifft;
+  fftw_complex * prs_conj_ifft;
+  fftw_complex * prs_syms;
+  /* raw symbols */
+  fftw_complex symbols[76][2048];
 }dab_state;
 
 
