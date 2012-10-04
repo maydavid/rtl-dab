@@ -160,14 +160,14 @@ int8_t dab_demod(dab_state *dab){
   dab_fic_depuncture(&dab->FIC[2304*1],&dab->FIC_dep[3096*1]);
   dab_fic_depuncture(&dab->FIC[2304*2],&dab->FIC_dep[3096*2]);
   dab_fic_depuncture(&dab->FIC[2304*3],&dab->FIC_dep[3096*3]);
-
+  
   /* Vitdec */
-
+  
   viterbi( &dab->FIC_dep[3096*0], 3096, &dab->FIC_dep_dec[768*0]);
   viterbi( &dab->FIC_dep[3096*1], 3096, &dab->FIC_dep_dec[768*1]);
   viterbi( &dab->FIC_dep[3096*2], 3096, &dab->FIC_dep_dec[768*2]);
   viterbi( &dab->FIC_dep[3096*3], 3096, &dab->FIC_dep_dec[768*3]);
-
+  
 
   /*De-scramble */
   dab_fic_descramble( &dab->FIC_dep_dec[768*0],  &dab->FIC_dep_dec_scr[768*0], 768);

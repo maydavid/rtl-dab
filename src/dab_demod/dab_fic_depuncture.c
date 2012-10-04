@@ -4,7 +4,7 @@
 /* taken from openDAB */
 /*sourceforge.net/projects/opendab/*/
 
-int32_t dab_fic_depuncture(int32_t *in, int32_t *out)
+int32_t dab_fic_depuncture(uint8_t *in, uint8_t *out)
 {
     int32_t i,j,offset;
 
