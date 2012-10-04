@@ -22,9 +22,9 @@ david.may.muc@googlemail.com
 #include "dab_sync.h"
 
 float mag_squared(fftw_complex sample) {
-    const float __x = sample[0];
-    const float __y = sample[1];
-    return __x * __x + __y * __y;
+    float x = sample[0];
+    float y = sample[1];
+    return x * x + y *y;
 }
 
 uint32_t dab_coarse_time_sync(int8_t * real,uint8_t * buffer,float * filt) {
