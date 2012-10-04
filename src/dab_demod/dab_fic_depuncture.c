@@ -1,6 +1,10 @@
 #include "dab_fic_depuncture.h"
 
-int32_t fic_depuncture(int32_t *in, int32_t *out)
+
+/* taken from openDAB */
+/*sourceforge.net/projects/opendab/*/
+
+int32_t dab_fic_depuncture(int32_t *in, int32_t *out)
 {
     int32_t i,j,offset;
 

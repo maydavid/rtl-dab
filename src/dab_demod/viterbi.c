@@ -466,7 +466,7 @@ int init_viterbi()
     return 0;
 }
 
-int viterbi(char *logfile, unsigned char *ibuf, int ilen, unsigned char *obuf)
+int viterbi(unsigned char *ibuf, int ilen, unsigned char *obuf)
 {
     int i;
     unsigned int metric;
