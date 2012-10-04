@@ -5,6 +5,9 @@ DAB/DAB+ receiver for use with rtl-sdr sticks
 
 - For the time being only Mode I supported
 
+NOT A WORKING APPLICATION ATM!
+
+
 # Status:
 
 ## 01/10/2012
