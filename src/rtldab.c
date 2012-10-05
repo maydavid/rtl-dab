@@ -94,7 +94,7 @@ int main (int argc, char **argv)
 
   int gain = AUTO_GAIN;
   dab_state dab;
-  dab.frequency = 222064000-9000;
+  dab.frequency = 222064000-9000;//178352000-6000;
 
   fprintf(stderr,"\n");
   fprintf(stderr,"rtldab %s \n",VERSION);
