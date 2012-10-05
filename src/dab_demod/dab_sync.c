@@ -122,7 +122,7 @@ int32_t dab_coarse_freq_sync(fftw_complex * symbols){
 }
 
 
-double dab_fine_freq_corr(fftw_complex * dab_frame,uint32_t fine_timeshift){
+double dab_fine_freq_corr(fftw_complex * dab_frame,int32_t fine_timeshift){
   fftw_complex *left;
   fftw_complex *right;
   fftw_complex *lr;

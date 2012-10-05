@@ -19,12 +19,12 @@ david.may.muc@googlemail.com
 
 */
 
-#include "dab_demod.h"
+#include "dab_helper_functions.h"
 
 
-void dab_bit_to_byte(uint8_t * in, uint8_t * out,uint8_t len) {
-  uint8_t i;
-  uint8_t bc=0;
+void dab_bit_to_byte(uint8_t * in, uint8_t * out,uint32_t len) {
+  uint32_t i;
+  uint32_t bc=0;
   for (i=0;i<len;i+=8){
     out[bc] = (in[i+0]<<7) + (in[i+1]<<6) + (in[i+2]<<5) + (in[i+3]<<4) +   
       (in[i+4]<<3) + (in[i+5]<<2) + (in[i+6]<<1) +(in[i+7]<<0);
@@ -32,7 +32,9 @@ void dab_bit_to_byte(uint8_t * in, uint8_t * out,uint8_t len) {
   }
 }
 
-int8_t dab_crc16(uint8_t * in,uint8_t len) {
+
+
+int8_t dab_crc16(uint8_t * in,uint32_t len) {
   uint16_t POLY=0x8408;
   uint16_t POLY_CORRECT = 0xF0B8;
   uint16_t crc = 0xFFFF;

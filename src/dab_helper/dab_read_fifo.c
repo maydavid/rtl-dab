@@ -35,8 +35,8 @@ int32_t dab_read_fifo(CircularBuffer * fifo,uint32_t bytes,int32_t shift,uint8_t
 	  cbRead(fifo,&buffer[j]);
     }
   else {
-    for (i=0;i<bytes+shift;i++)
-      cbRead(fifo,&buffer[i]);
+    for (j=0;j<bytes+shift;j++)
+      cbRead(fifo,&buffer[j]);
   }
   return 1;
 }

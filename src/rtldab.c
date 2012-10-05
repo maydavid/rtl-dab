@@ -55,7 +55,7 @@ static void *demod_thread_fn(void *arg)
       corr_counter++;
       if (corr_counter > 10) {
 	corr_counter = 0 ;
-	dab->frequency = dab->frequency - dab->fine_freq_shift + dab->coarse_freq_shift*1000;
+	dab->frequency = dab->frequency - dab->fine_freq_shift;// + dab->coarse_freq_shift*1000;
 	rtlsdr_set_center_freq(dev,dab->frequency);
 	fprintf(stderr,"new center freq : %i\n",rtlsdr_get_center_freq(dev));
 	fprintf(stderr,"cfs : %i\n",dab->coarse_freq_shift);
@@ -93,7 +93,7 @@ int main (int argc, char **argv)
 
   int gain = AUTO_GAIN;
   dab_state dab;
-  dab.frequency = 222064000;
+  dab.frequency = 222064000-9000;
 
   fprintf(stderr,"\n");
   fprintf(stderr,"rtldab %s \n",VERSION);

@@ -43,10 +43,10 @@ int8_t dab_demod(dab_state *dab){
 
   /* complex data conversion */
   for (j=0;j<196608*2;j+=2){
-    dab->real[j/2]=dab->input_buffer[j]-127;
-    dab->imag[j/2]=dab->input_buffer[j+1]-127;
+    dab->real[j/2]=dab->buffer[j]-127;
+    dab->imag[j/2]=dab->buffer[j+1]-127;
   }
-  
+
   /* coarse time sync */
   /* performance bottleneck atm */
   dab->coarse_timeshift = dab_coarse_time_sync(dab->real,dab->input_buffer,dab->filt);
@@ -107,6 +107,7 @@ int8_t dab_demod(dab_state *dab){
 	  /(dab->symbols[j-1][i][0]*dab->symbols[j-1][i][0]+dab->symbols[j-1][i][1]*dab->symbols[j-1][i][1]);
       }
   }
+
   int32_t k=0;
   for (j=0;j<75;j++) {
     for (i=0;i<2048;i++){
@@ -134,8 +135,8 @@ int8_t dab_demod(dab_state *dab){
       dab->symbols_dc_fd[(i*1536)+j][1] = dab->symbols_dc[(i*1536)+k][1];
     } 
   }
-  
-  /* demapping */
+
+   /* demapping */
   for (i=0;i<75;i++){
     for (j=0;j<1536*2;j++){
       if (j<1536){
@@ -146,7 +147,6 @@ int8_t dab_demod(dab_state *dab){
       }
     }
   }
-
   /* block partitioning */
   
   for (i=0;i<1536*2;i++){
@@ -155,6 +155,7 @@ int8_t dab_demod(dab_state *dab){
           dab->FIC[i+3072*2] = dab->symbols_demapped[2][i];
   }
   
+ 
   /* FIC depuncture */
   dab_fic_depuncture(&dab->FIC[0],&dab->FIC_dep[0]);
   dab_fic_depuncture(&dab->FIC[2304*1],&dab->FIC_dep[3096*1]);
@@ -175,12 +176,66 @@ int8_t dab_demod(dab_state *dab){
   dab_fic_descramble( &dab->FIC_dep_dec[768*2],  &dab->FIC_dep_dec_scr[768*2], 768);
   dab_fic_descramble( &dab->FIC_dep_dec[768*3],  &dab->FIC_dep_dec_scr[768*3], 768);
   
+
+  /* FIC -> FIB */
+  for (i=0; i<256; i++)
+    {
+      dab->fib[0][i] = dab->FIC_dep_dec_scr[768*0+i];
+      dab->fib[1][i] = dab->FIC_dep_dec_scr[768*0+256+i];
+      dab->fib[2][i] = dab->FIC_dep_dec_scr[768*0+512+i];
+      dab->fib[3][i] = dab->FIC_dep_dec_scr[768*1+i];
+      dab->fib[4][i] = dab->FIC_dep_dec_scr[768*1+256+i];
+      dab->fib[5][i] = dab->FIC_dep_dec_scr[768*1+512+i];
+      dab->fib[6][i] = dab->FIC_dep_dec_scr[768*2+i];
+      dab->fib[7][i] = dab->FIC_dep_dec_scr[768*2+256+i];
+      dab->fib[8][i] = dab->FIC_dep_dec_scr[768*2+512+i];
+      dab->fib[9][i] = dab->FIC_dep_dec_scr[768*3+i];
+      dab->fib[10][i] = dab->FIC_dep_dec_scr[768*3+256+i];
+      dab->fib[11][i] = dab->FIC_dep_dec_scr[768*3+512+i];
+    }
+
+    /* CRC check */
+ 
+  for (i=0;i<12;i++){
+    j = dab_crc16(dab->fib[i], 256);
+    if (j)
+      fprintf(stderr,".");
+
+    dab_bit_to_byte(dab->fib[i],dab->fib_c[i],256);
+    //bit_to_byte(1,dab->fib[i],256,dab->fib_c[i]);
+    if (j==0)
+      for(j=0;j<32;j++)
+	fprintf(stderr,"%c",dab->fib_c[i][j]);
+    //fprintf(stderr,"\n");
+  }
   
 
 return 1;
 
 }
 
+
+/* openDAB */
+void init_f_interl_table(dab_state *dab)
+{
+  int i;
+  int n;
+  int KI[2048];
+  KI[0] = 0;
+  for (i=1; i<2048; i++)
+    {
+      KI[i] = (13 * KI[i-1] + 511) % 2048;
+    }
+  n = 0;
+  for (i=0; i<2048; i++)
+    {
+      if ((KI[i]>=256) && (KI[i] <= 1792) && (KI[i]!= 1024))
+	{
+	  dab->f_interl_table[n] = KI[i] - 1024;
+	  n++;
+	}
+    }
+}
 
 void dab_demod_init(dab_state * dab){
   cbInit(&(dab->fifo),(196608*2*4)); // 4 frames
@@ -191,6 +246,8 @@ void dab_demod_init(dab_state * dab){
   dab->prs_conj_ifft = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * (2048 + 32));
   dab->prs_syms = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * (2048 + 32));
   prsgen(dab->prs_ifft,dab->prs_conj_ifft,dab->prs_syms);
+  init_f_interl_table(dab);
+  init_viterbi();
   dab->symbols_d = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 2048 * 75);
   dab->symbols_dc = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 1536 * 75);
   dab->symbols_dc_fd = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 1536 * 75);

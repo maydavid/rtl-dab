@@ -25,6 +25,9 @@ david.may.muc@googlemail.com
 #include "dab_read_fifo.h"
 #include "dab_sync.h"
 #include "dab_fic_descramble.h"
+#include "dab_fic_depuncture.h"
+#include "dab_helper_functions.h"
+#include "viterbi.h"
 
 
 #define DEFAULT_BUF_LENGTH (16 * 16384)
@@ -36,7 +39,7 @@ typedef struct{
   uint8_t buffer[196608*2];
   int32_t coarse_timeshift;
   int32_t fine_timeshift;
-  uint32_t coarse_freq_shift;
+  int32_t coarse_freq_shift;
   double fine_freq_shift;
   CircularBuffer fifo;
   int8_t real[196608];
@@ -61,6 +64,8 @@ typedef struct{
   uint8_t FIC_dep[3096*4];
   uint8_t FIC_dep_dec[768*4];
   uint8_t FIC_dep_dec_scr[768*4];
+  uint8_t fib[12][256];
+  uint8_t fib_c[12][32];
   int f_interl_table[2048];
 }dab_state;
 
