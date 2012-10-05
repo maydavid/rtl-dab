@@ -28,6 +28,7 @@ david.may.muc@googlemail.com
 #include <unistd.h>
 
 #include "dab_demod.h"
+#include "dab_fic_parser.h"
 
 
 
@@ -50,6 +51,7 @@ for (i=0;i<20;i++) {
   fread(dab.input_buffer,1,16*16384,fh);
   dab.input_buffer_len = 16*16384;
   dab_demod(&dab);
+  dab_fic_parser(dab.fib);
   if (abs(dab.fine_freq_shift) > 20 && abs(dab.coarse_freq_shift) > 1) {
     corr_counter++;
     corr_counter = 0 ;

@@ -192,23 +192,7 @@ int8_t dab_demod(dab_state *dab){
       dab->fib[9][i] = dab->FIC_dep_dec_scr[768*3+i];
       dab->fib[10][i] = dab->FIC_dep_dec_scr[768*3+256+i];
       dab->fib[11][i] = dab->FIC_dep_dec_scr[768*3+512+i];
-    }
-
-    /* CRC check */
- 
-  for (i=0;i<12;i++){
-    j = dab_crc16(dab->fib[i], 256);
-    if (j)
-      fprintf(stderr,".");
-
-    dab_bit_to_byte(dab->fib[i],dab->fib_c[i],256);
-    //bit_to_byte(1,dab->fib[i],256,dab->fib_c[i]);
-    if (j==0)
-      for(j=0;j<32;j++)
-	fprintf(stderr,"%c",dab->fib_c[i][j]);
-    //fprintf(stderr,"\n");
-  }
-  
+    } 
 
 return 1;
 

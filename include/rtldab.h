@@ -32,6 +32,7 @@ david.may.muc@googlemail.com
 
 
 #include "dab_demod.h"
+#include "dab_fic_parser.h"
 
 
 #define VERSION "0.0"

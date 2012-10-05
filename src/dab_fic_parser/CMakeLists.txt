@@ -1,0 +1,2 @@
+add_library(dab_fic_parser dab_fic_parser.c)
+target_link_libraries(dab_fic_parser dab_helper_functions)

@@ -51,6 +51,7 @@ static void *demod_thread_fn(void *arg)
   while (!do_exit) {
     sem_wait(&data_ready);
     dab_demod(dab);
+    dab_fic_parser(dab->fib);
     if (abs(dab->fine_freq_shift) > 20 && abs(dab->coarse_freq_shift) > 1) {
       corr_counter++;
       if (corr_counter > 10) {

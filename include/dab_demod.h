@@ -65,7 +65,7 @@ typedef struct{
   uint8_t FIC_dep_dec[768*4];
   uint8_t FIC_dep_dec_scr[768*4];
   uint8_t fib[12][256];
-  uint8_t fib_c[12][32];
+  //uint8_t fib_c[12][32];
   int f_interl_table[2048];
 }dab_state;
 
