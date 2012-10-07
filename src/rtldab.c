@@ -37,6 +37,8 @@ static sem_t data_ready;
 
 uint32_t corr_counter;
 
+ServiceInformation sinfo;
+
 
 static void sighandler(int signum)
 {
@@ -51,12 +53,12 @@ static void *demod_thread_fn(void *arg)
   while (!do_exit) {
     sem_wait(&data_ready);
     dab_demod(dab);
-    dab_fic_parser(dab->fib);
-    if (abs(dab->fine_freq_shift) > 20 && abs(dab->coarse_freq_shift) > 1) {
+    dab_fic_parser(dab->fib,&sinfo);
+    if ((abs(dab->fine_freq_shift) > 20) || (abs(dab->coarse_freq_shift) > 1)) {
       corr_counter++;
       if (corr_counter > 10) {
 	corr_counter = 0 ;
-	dab->frequency = dab->frequency - dab->fine_freq_shift;// + dab->coarse_freq_shift*1000;
+	dab->frequency = dab->frequency - dab->fine_freq_shift + dab->coarse_freq_shift*1000;
 	rtlsdr_set_center_freq(dev,dab->frequency);
 	fprintf(stderr,"new center freq : %i\n",rtlsdr_get_center_freq(dev));
 	fprintf(stderr,"cfs : %i\n",dab->coarse_freq_shift);
@@ -94,7 +96,7 @@ int main (int argc, char **argv)
 
   int gain = AUTO_GAIN;
   dab_state dab;
-  dab.frequency = 222064000-9000;//178352000-6000;
+  dab.frequency = 220352000;//222064000-9000;//178352000-6000;
 
   fprintf(stderr,"\n");
   fprintf(stderr,"rtldab %s \n",VERSION);
@@ -189,6 +191,7 @@ int main (int argc, char **argv)
   / start demod thread & rtl read 
   -----------------------------------------------*/
   dab_demod_init(&dab);
+  dab_fic_parser_init(&sinfo);
   pthread_create(&demod_thread, NULL, demod_thread_fn, (void *)(&dab));
   rtlsdr_read_async(dev, rtlsdr_callback, (void *)(&dab),
 			      DEFAULT_ASYNC_BUF_NUMBER, DEFAULT_BUF_LENGTH);
