@@ -35,35 +35,36 @@ david.may.muc@googlemail.com
 
 int corr_counter;
 
-ServiceInformation * sinfo;
-
+//ServiceInformation sinfo;
+Ensemble sinfo;
 
 int main(void){
 
-dab_state dab;
-int frequency = 222055000;
-
-FILE *fh;
-fh = fopen("222055_dump.dump","r");
-dab_demod_init(&dab);
-fread(dab.input_buffer,1,16*16384,fh);
-dab.input_buffer_len = 16*16384;
-int i;
-
-for (i=0;i<20;i++) {
+  dab_state dab;
+  int frequency = 222055000;
+  
+  FILE *fh;
+  fh = fopen("222055_dump.dump","r");
+  dab_demod_init(&dab);
+  dab_fic_parser_init(&sinfo);
   fread(dab.input_buffer,1,16*16384,fh);
-  dab.input_buffer_len = 16*16384;
-  dab_demod(&dab);
-  dab_fic_parser(dab.fib,sinfo);
-  if (abs(dab.fine_freq_shift) > 20 && abs(dab.coarse_freq_shift) > 1) {
-    corr_counter++;
-    corr_counter = 0 ;
-    frequency = frequency - dab.fine_freq_shift;// + dab2->coarse_freq_shift*1000;
-    fprintf(stderr,"cfs : %i\n",dab.coarse_freq_shift);
-    fprintf(stderr,"ffs : %f\n",dab.fine_freq_shift);
-  }
+dab.input_buffer_len = 16*16384;
+ int i;
+
+ for (i=0;i<20;i++) {
+   fread(dab.input_buffer,1,16*16384,fh);
+   dab.input_buffer_len = 16*16384;
+   dab_demod(&dab);
+   dab_fic_parser(dab.fib,&sinfo);
+   if (abs(dab.fine_freq_shift) > 20 || abs(dab.coarse_freq_shift) > 1) {
+     corr_counter++;
+     corr_counter = 0 ;
+     frequency = frequency - dab.fine_freq_shift;// + dab2->coarse_freq_shift*1000;
+     fprintf(stderr,"cfs : %i\n",dab.coarse_freq_shift);
+     fprintf(stderr,"ffs : %f\n",dab.fine_freq_shift);
+   }
  } 
-
-
+ 
+ 
  return 1;
 }

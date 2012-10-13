@@ -51,7 +51,7 @@ uint8_t isServiceLabel(struct ProgramServiceLabel *lst,uint16_t SId){
       return 1;   
   }
   list = lst;
-  system("clear");
+  //system("clear");
   fprintf (stderr,"\nProgram list:--------------------------------\n");
   fprintf(stderr,"Service ID --- Label\n");
   while (list->next != NULL) {
@@ -69,17 +69,15 @@ uint8_t dab_fig_type_1(uint8_t * fig,ServiceInformation * sinfo){
   //fprintf(stderr,"%u\n",extension);
   
   if (extension == 0) {
+    //fprintf(stderr,"FIG 1/0\n");
   }
   if (extension == 1) {
-    //fprintf(stderr,"hh\n");
     if (sinfo->psl != NULL) {
-      //fprintf(stderr,"aa\n");
       if (isServiceLabel(sinfo->psl,((uint16_t)fig[1]<<8) + fig[2])==0){
 	appendServiceLabel(sinfo->psl,((uint16_t)fig[1]<<8) + fig[2],&fig[3],
 			   ((uint16_t)fig[4]<<8) + fig[5]);
       }
     }	else {
-      //fprintf(stderr,"ll\n");
       appendServiceLabel(sinfo->psl,((uint16_t)fig[1]<<8) + fig[2],&fig[3],
       	 ((uint16_t)fig[4]<<8) + fig[5]);
     }

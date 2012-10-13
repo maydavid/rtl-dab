@@ -37,8 +37,8 @@ static sem_t data_ready;
 
 uint32_t corr_counter;
 
-ServiceInformation sinfo;
-
+//ServiceInformation sinfo;
+Ensemble sinfo;
 
 static void sighandler(int signum)
 {
