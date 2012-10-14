@@ -51,7 +51,7 @@ int main(void){
 dab.input_buffer_len = 16*16384;
  int i;
 
- for (i=0;i<20;i++) {
+ for (i=0;i<100;i++) {
    fread(dab.input_buffer,1,16*16384,fh);
    dab.input_buffer_len = 16*16384;
    dab_demod(&dab);
@@ -64,6 +64,19 @@ dab.input_buffer_len = 16*16384;
      fprintf(stderr,"ffs : %f\n",dab.fine_freq_shift);
    }
  } 
+
+ fprintf(stderr,"ENSEMBLE STATUS:                                 \n");
+ fprintf(stderr,"-------------------------------------------------\n");
+ fprintf(stderr,"locked: %u \n",sinfo.locked);
+ 
+ fprintf(stderr,"Subchannel Organization:                         \n");
+ struct BasicSubchannelOrganization *sco;
+ sco = sinfo.sco;
+ while (sco->next != NULL) {
+   fprintf(stderr,"SubChId: %2u   |   StartAddr: %u               \n",
+	   sco->SubChId,sco->startAddr);
+   sco = sco->next;
+ }
  
  
  return 1;

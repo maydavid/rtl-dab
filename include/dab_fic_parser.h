@@ -7,7 +7,10 @@
 
 typedef struct{
   
+  uint8_t locked;
   struct ServiceList *sl;
+  struct BasicSubchannelOrganization *sco;
+  
 
 }Ensemble;
 
@@ -35,6 +38,19 @@ struct ServiceList {
   struct ServiceList *next;
 };
 
+/* FIG 0/1 */
+struct BasicSubchannelOrganization {
+  uint8_t SubChId;
+  uint16_t startAddr;
+  uint8_t shortlong;
+  uint8_t tableSwitch;
+  uint8_t tableIndex;
+  uint8_t option;
+  uint8_t protectionLevel;
+  uint16_t subchannelSize;
+  struct BasicSubchannelOrganization * next;
+};
+
 
 
 
@@ -42,4 +58,4 @@ uint8_t dab_fic_parser(uint8_t fibs[12][256],Ensemble * ens);
 void dab_fic_parser_init(Ensemble *ens);
 
 //uint8_t dab_fig_type_1(uint8_t * fig,ServiceInformation * sinfo);
-//uint8_t dab_fig_type_0(uint8_t * fig,ServiceInformation * sinfo,uint32_t length);
+uint8_t dab_fig_type_0(uint8_t * fig,Ensemble * ens,uint32_t length);

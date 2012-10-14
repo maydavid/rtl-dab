@@ -23,12 +23,13 @@ david.may.muc@googlemail.com
 
 void dab_fic_parser_init(Ensemble * ens) {
   ens->sl = malloc(sizeof(struct ServiceList));
+  ens->locked = 0;
   ens->sl->next = NULL;
   ens->sl->scp = malloc(sizeof(struct ServiceComponents));
   ens->sl->scp->next = NULL;
   //sinfo->esl = NULL;
-  //sinfo->sco = malloc(sizeof(struct BasicSubchannelOrganization));
-  //sinfo->sco->next = NULL;
+  ens->sco = malloc(sizeof(struct BasicSubchannelOrganization));
+  ens->sco->next = NULL;
   //sinfo->ensinfo = malloc(sizeof(struct EnsembleInformation));
 }
 
@@ -43,6 +44,7 @@ uint8_t dab_fic_parser(uint8_t fibs[12][256],Ensemble *ens){
     j = dab_crc16(fibs[i], 256);
     dab_bit_to_byte(fibs[i],fib_c[i],256);
     if (j==0) {
+      ens->locked = 1;
       type = 0;
       length = 0;
       shift = 0;
