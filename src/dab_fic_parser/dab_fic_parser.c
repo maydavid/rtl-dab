@@ -30,6 +30,8 @@ void dab_fic_parser_init(Ensemble * ens) {
   //sinfo->esl = NULL;
   ens->sco = malloc(sizeof(struct BasicSubchannelOrganization));
   ens->sco->next = NULL;
+  ens->psl = malloc(sizeof(struct ProgrammeServiceLabel));
+  ens->psl->next = NULL;
   //sinfo->ensinfo = malloc(sizeof(struct EnsembleInformation));
 }
 
@@ -59,7 +61,7 @@ uint8_t dab_fic_parser(uint8_t fibs[12][256],Ensemble *ens){
 	    dab_fig_type_0(&fib_c[i][shift+1],ens,length);
 	    break;
 	  case 1:
-	    //dab_fig_type_1(&fib_c[i][shift+1],sinfo);
+	    dab_fig_type_1(&fib_c[i][shift+1],ens);
 	    break;
 	  case 2:
 	    fprintf(stderr,"FIG 2/x\n");

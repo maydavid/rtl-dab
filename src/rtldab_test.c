@@ -83,7 +83,12 @@ dab.input_buffer_len = 16*16384;
    fprintf(stderr,"SId: %8X | SubChId: %2u | SCId %u\n",sl->SId,sl->scp->SubChId,sl->scp->SCId);
    sl = sl->next;
  }
- 
+ struct ProgrammeServiceLabel *psl;
+ psl = sinfo.psl;
+ while (psl->next != NULL) {
+   fprintf(stderr,"SId: %8X | Label: %s \n",psl->SId,psl->label);
+   psl = psl->next;
+  }
  
  return 1;
 }

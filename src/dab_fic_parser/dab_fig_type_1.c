@@ -22,49 +22,53 @@ david.may.muc@googlemail.com
 #include "dab_fic_parser.h"
 
 
-void appendServiceLabel(struct ProgramServiceLabel *lst,uint16_t SId ,
+void appendServiceLabel(struct ProgrammeServiceLabel *lst,uint16_t SId ,
 			uint8_t * label, uint16_t charFlag){
 
-  struct ProgramServiceLabel *temp1;
-  temp1 = malloc(sizeof(struct ProgramServiceLabel));
+  struct ProgrammeServiceLabel *temp1;
+  temp1 = malloc(sizeof(struct ProgrammeServiceLabel));
   temp1 = lst;
   while(temp1->next!=NULL)
     temp1 = temp1->next;
   
-  struct ProgramServiceLabel *temp;
-  temp = malloc(sizeof(struct ProgramServiceLabel));
+  struct ProgrammeServiceLabel *temp;
+  temp = malloc(sizeof(struct ProgrammeServiceLabel));
   temp->SId = SId;
   memcpy(temp->label,label,16);
-  temp->charFlag = charFlag;
+  temp->label[16] = '\0';
+  temp->chFlag = charFlag;
   temp->next = NULL;
   temp1->next = temp;
   
  }
 
-uint8_t isServiceLabel(struct ProgramServiceLabel *lst,uint16_t SId){
+uint8_t isServiceLabel(struct ProgrammeServiceLabel *lst,uint16_t SId){
   
-  struct ProgramServiceLabel *list;
+  struct ProgrammeServiceLabel *list;
   list = lst;
   while (list->next != NULL) {
     list = list->next; 
     if (list->SId == SId)
       return 1;   
   }
+  if (0){
   list = lst;
   //system("clear");
-  fprintf (stderr,"\nProgram list:--------------------------------\n");
+  fprintf (stderr,"\nProgramme list:--------------------------------\n");
   fprintf(stderr,"Service ID --- Label\n");
   while (list->next != NULL) {
     list = list->next; 
     
     fprintf(stderr,"%10u  ---  %s\n",list->SId, list->label);
   }
+
+  }
   return 0;
   
 }
 
 
-uint8_t dab_fig_type_1(uint8_t * fig,ServiceInformation * sinfo){
+uint8_t dab_fig_type_1(uint8_t * fig,Ensemble * sinfo){
   uint8_t extension = fig[0] & 0x03;
   //fprintf(stderr,"%u\n",extension);
   
