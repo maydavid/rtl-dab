@@ -72,6 +72,8 @@ struct ServiceList * appendService(struct ServiceList *sl,uint8_t *fig,uint32_t 
   new->ServiceReference = sr;
   int idx;
   if (pd) {
+    new->SId = ((uint32_t)fig[0]<< 24) + ((uint32_t)fig[1]<< 16) + 
+      ((uint32_t)fig[2]<< 8) + (uint32_t)fig[3];
     new->ECC = fig[0];
     new->CountryId = fig[1] >> 4;
     new->localFlag = fig[4] >> 7;
@@ -79,6 +81,7 @@ struct ServiceList * appendService(struct ServiceList *sl,uint8_t *fig,uint32_t 
     new->NumberOfSCs = fig[4] & 0x0F; 
     idx = 5;
       } else {
+    new->SId = ((uint32_t)fig[0] << 8) + (uint8_t)fig[1];
     new->ECC = 0;
     new->CountryId = fig[0] >> 4;
     new->localFlag = fig[2] >> 7;
@@ -154,13 +157,13 @@ uint8_t dab_fig_type_0(uint8_t * fig,Ensemble * ens, uint32_t length){
   if (extension == 0){
   }
   if (extension == 1){
-    while (idx<(length)){
-      ens->sco = appendSubchannel(ens->sco,&fig[idx+1],fig[idx+1]>>2);	
-      if (fig[idx+3] >> 7)
+    while (idx<(length-1)){
+      ens->sco = appendSubchannel(ens->sco,&fig[idx],fig[idx]>>2);	
+      if (fig[idx+2] >> 7)
 	idx += 4;
       else
 	idx += 3;
-      //fprintf(stderr,"%u \n",fig[idx+1]>>2);
+      //fprintf(stderr,"%u %u %u\n",idx,length-1,fig[idx]>>2);
     }
   }
   if (extension == 2) {
@@ -178,10 +181,12 @@ uint8_t dab_fig_type_0(uint8_t * fig,Ensemble * ens, uint32_t length){
 	ens->sl = appendService(ens->sl,&fig[idx],sr,1);
 	idx = idx + (5+(fig[idx+4] & 0x0F)*2);
       }
+      //fprintf(stderr,"%u %u\n",idx,length);
     }
   }
   /* Service Component in Packet Mode */
   if (extension == 3) {
+    //fprintf(stderr,"%X %u\n",((uint16_t)fig[0] << 8) + (fig[1] >> 4),fig[4] >> 2);
 
   }
   /* Service Linking Info */

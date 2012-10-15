@@ -28,6 +28,7 @@ struct ServiceComponents{
 
 struct ServiceList {
 
+  uint32_t SId;
   uint8_t ECC;
   uint8_t CountryId;
   uint32_t ServiceReference;

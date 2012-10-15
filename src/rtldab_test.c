@@ -51,7 +51,7 @@ int main(void){
 dab.input_buffer_len = 16*16384;
  int i;
 
- for (i=0;i<100;i++) {
+ for (i=0;i<150;i++) {
    fread(dab.input_buffer,1,16*16384,fh);
    dab.input_buffer_len = 16*16384;
    dab_demod(&dab);
@@ -73,9 +73,15 @@ dab.input_buffer_len = 16*16384;
  struct BasicSubchannelOrganization *sco;
  sco = sinfo.sco;
  while (sco->next != NULL) {
-   fprintf(stderr,"SubChId: %2u   |   StartAddr: %u               \n",
-	   sco->SubChId,sco->startAddr);
+   fprintf(stderr,"SubChId: %2u | StartAddr: %4u | sl:%u | subchannelSize: %u   \n",
+	   sco->SubChId,sco->startAddr,sco->shortlong,sco->subchannelSize);
    sco = sco->next;
+ }
+ struct ServiceList *sl;
+ sl = sinfo.sl;
+ while (sl->next != NULL) {
+   fprintf(stderr,"SId: %8X | SubChId: %2u | SCId %u\n",sl->SId,sl->scp->SubChId,sl->scp->SCId);
+   sl = sl->next;
  }
  
  
