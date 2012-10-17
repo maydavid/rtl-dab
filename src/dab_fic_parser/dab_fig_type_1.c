@@ -26,7 +26,6 @@ struct ProgrammeServiceLabel * appendServiceLabel(struct ProgrammeServiceLabel *
 			uint8_t * label, uint16_t charFlag){
 
   struct ProgrammeServiceLabel *temp1;
-  //temp1 = malloc(sizeof(struct ProgrammeServiceLabel));
   temp1 = lst;
   while(temp1->next!=NULL){
     if (temp1->SId == SId)
