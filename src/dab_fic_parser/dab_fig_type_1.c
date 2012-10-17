@@ -22,50 +22,30 @@ david.may.muc@googlemail.com
 #include "dab_fic_parser.h"
 
 
-void appendServiceLabel(struct ProgrammeServiceLabel *lst,uint16_t SId ,
+struct ProgrammeServiceLabel * appendServiceLabel(struct ProgrammeServiceLabel *lst,uint16_t SId ,
 			uint8_t * label, uint16_t charFlag){
 
   struct ProgrammeServiceLabel *temp1;
-  temp1 = malloc(sizeof(struct ProgrammeServiceLabel));
+  //temp1 = malloc(sizeof(struct ProgrammeServiceLabel));
   temp1 = lst;
-  while(temp1->next!=NULL)
+  while(temp1->next!=NULL){
+    if (temp1->SId == SId)
+      return lst;
     temp1 = temp1->next;
   
+  }
   struct ProgrammeServiceLabel *temp;
   temp = malloc(sizeof(struct ProgrammeServiceLabel));
   temp->SId = SId;
   memcpy(temp->label,label,16);
   temp->label[16] = '\0';
   temp->chFlag = charFlag;
-  temp->next = NULL;
-  temp1->next = temp;
+  temp->next = lst;
+  return temp;
   
  }
 
-uint8_t isServiceLabel(struct ProgrammeServiceLabel *lst,uint16_t SId){
-  
-  struct ProgrammeServiceLabel *list;
-  list = lst;
-  while (list->next != NULL) {
-    list = list->next; 
-    if (list->SId == SId)
-      return 1;   
-  }
-  if (0){
-  list = lst;
-  //system("clear");
-  fprintf (stderr,"\nProgramme list:--------------------------------\n");
-  fprintf(stderr,"Service ID --- Label\n");
-  while (list->next != NULL) {
-    list = list->next; 
-    
-    fprintf(stderr,"%10u  ---  %s\n",list->SId, list->label);
-  }
 
-  }
-  return 0;
-  
-}
 
 
 uint8_t dab_fig_type_1(uint8_t * fig,Ensemble * sinfo){
@@ -76,15 +56,18 @@ uint8_t dab_fig_type_1(uint8_t * fig,Ensemble * sinfo){
     //fprintf(stderr,"FIG 1/0\n");
   }
   if (extension == 1) {
-    if (sinfo->psl != NULL) {
-      if (isServiceLabel(sinfo->psl,((uint16_t)fig[1]<<8) + fig[2])==0){
-	appendServiceLabel(sinfo->psl,((uint16_t)fig[1]<<8) + fig[2],&fig[3],
-			   ((uint16_t)fig[4]<<8) + fig[5]);
-      }
-    }	else {
-      appendServiceLabel(sinfo->psl,((uint16_t)fig[1]<<8) + fig[2],&fig[3],
-      	 ((uint16_t)fig[4]<<8) + fig[5]);
-    }
+    sinfo->psl = appendServiceLabel(sinfo->psl,((uint16_t)fig[1]<<8) + fig[2],&fig[3],
+		       ((uint16_t)fig[4]<<8) + fig[5]);
+    
+  }
+  /* FIG 1/3 region Label */
+  if (extension == 3) {
+    //++fig;
+    //fprintf(stderr,"%s\n",++fig);
+  }
+  if (extension == 5) {
+    //fprintf(stderr,"FIG 1/5\n");
+    //fprintf(stderr,"%u\n",(uint32_t)fig);
   }
   
 }

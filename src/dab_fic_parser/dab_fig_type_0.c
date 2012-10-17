@@ -80,7 +80,7 @@ struct ServiceList * appendService(struct ServiceList *sl,uint8_t *fig,uint32_t 
     new->CAId = (fig[4] >> 4) & 0x07;
     new->NumberOfSCs = fig[4] & 0x0F; 
     idx = 5;
-      } else {
+  } else {
     new->SId = ((uint32_t)fig[0] << 8) + (uint8_t)fig[1];
     new->ECC = 0;
     new->CountryId = fig[0] >> 4;
@@ -152,6 +152,7 @@ struct ServiceList * appendService(struct ServiceList *sl,uint8_t *fig,uint32_t 
 uint8_t dab_fig_type_0(uint8_t * fig,Ensemble * ens, uint32_t length){
   uint8_t extension = fig[0] & 0x1F;
   //fprintf(stderr,"ext: %u\n",extension);
+  //fprintf(stderr,"OE: %u\n",(fig[0] >> 6) & 0x01);
   /* Basic sub-channel organization */
   uint32_t idx=1;
   if (extension == 0){
@@ -186,16 +187,56 @@ uint8_t dab_fig_type_0(uint8_t * fig,Ensemble * ens, uint32_t length){
   }
   /* Service Component in Packet Mode */
   if (extension == 3) {
-    //fprintf(stderr,"%X %u\n",((uint16_t)fig[0] << 8) + (fig[1] >> 4),fig[4] >> 2);
+    /* while(idx < length) {
+    fprintf(stderr,"%u %u\n",((uint16_t)fig[idx] << 4) + (fig[idx+1] >> 4),fig[idx+4] >> 2);
+    fprintf(stderr,"%INFO: %X %X %X %X\n",fig[idx],fig[idx+1],fig[idx+2],fig[idx+3]);
+    // if not DG flag... 
+    idx += 5;
+    }
+    */
+  }
+  if (extension == 4) {
+    fprintf(stderr,"SCs with CA\n");
 
   }
   /* Service Linking Info */
   if (extension == 6) {
 
   }
+
+  if (extension == 8) {
+    //fprintf(stderr,"%X %X %X %X\n",fig[1],fig[2],fig[3],fig[4]);
+    /*
+    uint32_t sr=0;
+    uint16_t sc=0;
+    if (!((fig[0] >> 5) & 0x01)){
+      sr = ((uint16_t)fig[idx] << 8) + (uint8_t)fig[idx+1];
+      if(!(fig[idx+3] >> 7))
+	 sc = fig[idx+3] & 0x1f;
+    } else {
+      sr = (((uint32_t)fig[idx]) << 24) 
+	+ ((uint32_t)fig[idx+1] << 16)  
+	+ ((uint32_t)fig[idx+2] << 8)
+	+ fig[idx+3];
+      if((fig[idx+5] >> 7))
+	sc = fig[idx+6];
+    }
+    fprintf(stderr,"%X %u \n",sr,sc);
+    */
+  }
   /* User Application Information */
   if (extension == 13) {
   
+  }
+  /* FEC Subchannel Organization */
+  if (extension == 14) {
+    //fprintf(stderr,"FEC Subchannel Organization\n");
+    /*
+    while(idx < length) {
+      fprintf(stderr,"FEC SubChId: %u Scheme: %u \n",fig[idx]>>2,fig[idx] & 0x02);
+      idx++;
+    }
+    */
   }
   /* Program Type PTy */
   if (extension == 17) {
