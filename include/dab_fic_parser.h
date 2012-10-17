@@ -11,6 +11,7 @@ typedef struct{
   struct ServiceList *sl;
   struct BasicSubchannelOrganization *sco;
   struct ProgrammeServiceLabel *psl;
+  struct EnsembleLabel *esl;
   
 
 }Ensemble;
@@ -64,8 +65,14 @@ struct ProgrammeServiceLabel {
   struct ProgrammeServiceLabel * next;
 };
 
-
-
+struct EnsembleLabel {
+  uint8_t charset;
+  uint8_t OE;
+  uint8_t extension;
+  uint16_t EId;
+  uint8_t label[17];
+  uint16_t chFlag;
+};
 
 uint8_t dab_fic_parser(uint8_t fibs[12][256],Ensemble * ens);
 void dab_fic_parser_init(Ensemble *ens);

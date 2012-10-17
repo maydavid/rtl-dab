@@ -53,6 +53,10 @@ uint8_t dab_fig_type_1(uint8_t * fig,Ensemble * sinfo){
   
   if (extension == 0) {
     //fprintf(stderr,"FIG 1/0\n");
+    sinfo->esl->EId = ((uint16_t)fig[1]<<8) + fig[2];
+    memcpy(sinfo->esl->label,&fig[3],16);
+    sinfo->esl->label[16] = '\0';
+    sinfo->esl->chFlag = ((uint16_t)fig[4]<<8) + fig[5];
   }
   if (extension == 1) {
     sinfo->psl = appendServiceLabel(sinfo->psl,((uint16_t)fig[1]<<8) + fig[2],&fig[3],
