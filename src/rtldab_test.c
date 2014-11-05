@@ -54,11 +54,11 @@ int main(void){
   dab_fic_parser_init(&sinfo);
 
   // fill buffer
-  fread(dab.input_buffer,1,16*16384,fh);
-  dab.input_buffer_len = 16*16384;
+  //fread(dab.input_buffer,1,16*16384,fh);
+  //dab.input_buffer_len = 16*16384;
   
   int i;
-  for (i=0;i<150;i++) {
+  for (i=0;i<100;i++) {
     // read next dab frame
     fread(dab.input_buffer,1,16*16384,fh);
     dab.input_buffer_len = 16*16384;
