@@ -29,29 +29,36 @@ float mag_squared(fftw_complex sample) {
 
 uint32_t dab_coarse_time_sync(int8_t * real,uint8_t * buffer,float * filt) {
 
+  int32_t tnull = 2656; // was 2662? why?
   int32_t j,k;
+
+  // check for energy in fist tnull samples
   float e=0;
   float threshold=5000;
-  for (k=0;k<2662;k+=10)
+  for (k=0;k<tnull;k+=10)
     e = e +(float) abs(real[k]);
-  //fprintf(stderr,"%f \n",e);
+  //fprintf(stderr,"sum over nullsymbol: %f",e);
   if (e<threshold)
     return 0;
 
-  for (j=0;j<(196608-2662)/10;j++)
+  // energy was to high so we assume we are not in sync
+  // subsampled filter to detect where the null symbol is
+  for (j=0;j<(196608-tnull)/10;j++)
     filt[j] = 0;
-  for (j=0;j<196608-2662;j+=10)
-    for (k=0;k<2662;k+=10)
+  for (j=0;j<196608-tnull;j+=10)
+    for (k=0;k<tnull;k+=10)
       filt[j/10] = filt[j/10] +(float) abs(real[j+k]);
-  
+
+  // finding the minimum in filtered data gives position of null symbol
   float minVal=9999999;
   uint32_t minPos;
-  for (j=0;j<(196608-2662)/10;j++){
+  for (j=0;j<(196608-tnull)/10;j++){
     if (filt[j]<minVal) {
       minVal = filt[j];
       minPos = j*10;
     }
   }
+  //fprintf(stderr,"calculated position of nullsymbol: %f",minPos*2);
   return minPos*2;
 }
 
