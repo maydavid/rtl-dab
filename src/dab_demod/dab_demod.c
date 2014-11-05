@@ -99,15 +99,17 @@ int8_t dab_demod(dab_state *dab){
   for (j=1;j<75;j++) {
     for (i=0;i<2048;i++)
       {
-	dab->symbols_d[(j-1)*2048+i][0] = ((dab->symbols[j][i][0]*dab->symbols[j-1][i][0])
-					   +(dab->symbols[j][i][1]*dab->symbols[j-1][i][1]))
+	dab->symbols_d[(j-1)*2048+i][0] =
+	  ((dab->symbols[j][i][0]*dab->symbols[j-1][i][0])
+	   +(dab->symbols[j][i][1]*dab->symbols[j-1][i][1]))
 	  /(dab->symbols[j-1][i][0]*dab->symbols[j-1][i][0]+dab->symbols[j-1][i][1]*dab->symbols[j-1][i][1]);
-	dab->symbols_d[(j-1)*2048+i][1] = ((dab->symbols[j][i][0]*dab->symbols[j-1][i][1])
-					   -(dab->symbols[j][i][1]*dab->symbols[j-1][i][0]))
+	dab->symbols_d[(j-1)*2048+i][1] = 
+	  ((dab->symbols[j][i][0]*dab->symbols[j-1][i][1])
+	   -(dab->symbols[j][i][1]*dab->symbols[j-1][i][0]))
 	  /(dab->symbols[j-1][i][0]*dab->symbols[j-1][i][0]+dab->symbols[j-1][i][1]*dab->symbols[j-1][i][1]);
       }
   }
-
+  
   int32_t k=0;
   for (j=0;j<75;j++) {
     for (i=0;i<2048;i++){
@@ -115,11 +117,11 @@ int8_t dab_demod(dab_state *dab){
 	dab->symbols_dc[j*1536+k][0] = dab->symbols_d[j*2048+i][0];
 	dab->symbols_dc[j*1536+k][1] = dab->symbols_d[j*2048+i][1];
 	k++;
-	}
+      }
     }
     k = 0;
   }
-
+  
   /* frequency deinterleaving */
   for (i=0;i<75;i++){
     for (j=0;j<1536;j++) {
@@ -199,7 +201,7 @@ return 1;
 }
 
 
-/* openDAB */
+/* taken from openDAB */
 void init_f_interl_table(dab_state *dab)
 {
   int i;
@@ -222,18 +224,23 @@ void init_f_interl_table(dab_state *dab)
 }
 
 void dab_demod_init(dab_state * dab){
+  // circular buffer init
   cbInit(&(dab->fifo),(196608*2*4)); // 4 frames
+  // malloc of various buffers
   dab->coarse_timeshift = 0;
   dab->fine_timeshift=0;
   dab->dab_frame = ( fftw_complex* ) fftw_malloc( sizeof( fftw_complex ) * 196608 );
   dab->prs_ifft =( fftw_complex*) fftw_malloc(sizeof(fftw_complex) * (2048 + 32));
   dab->prs_conj_ifft = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * (2048 + 32));
   dab->prs_syms = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * (2048 + 32));
+  // generate prsn 
   prsgen(dab->prs_ifft,dab->prs_conj_ifft,dab->prs_syms);
+  // init interleaver table
   init_f_interl_table(dab);
+  // init viterbi decoder
   init_viterbi();
+  // malloc of various buffers
   dab->symbols_d = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 2048 * 75);
   dab->symbols_dc = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 1536 * 75);
   dab->symbols_dc_fd = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 1536 * 75);
-
 }
