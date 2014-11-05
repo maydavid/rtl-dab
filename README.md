@@ -3,6 +3,7 @@
 DAB/DAB+ receiver to use with rtl-sdr sticks
 
 Features:
+* FIC decoding
 * Only Mode I supported.
 
 ### This project uses snippets from:
