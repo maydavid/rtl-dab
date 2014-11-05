@@ -22,65 +22,55 @@ david.may.muc@googlemail.com
 #include "dab_fic_parser.h"
 
 
-void appendServiceLabel(struct ProgramServiceLabel *lst,uint16_t SId ,
+struct ProgrammeServiceLabel * appendServiceLabel(struct ProgrammeServiceLabel *lst,uint16_t SId ,
 			uint8_t * label, uint16_t charFlag){
 
-  struct ProgramServiceLabel *temp1;
-  temp1 = malloc(sizeof(struct ProgramServiceLabel));
+  struct ProgrammeServiceLabel *temp1;
   temp1 = lst;
-  while(temp1->next!=NULL)
+  while(temp1->next!=NULL){
+    if (temp1->SId == SId)
+      return lst;
     temp1 = temp1->next;
   
-  struct ProgramServiceLabel *temp;
-  temp = malloc(sizeof(struct ProgramServiceLabel));
+  }
+  struct ProgrammeServiceLabel *temp;
+  temp = malloc(sizeof(struct ProgrammeServiceLabel));
   temp->SId = SId;
   memcpy(temp->label,label,16);
-  temp->charFlag = charFlag;
-  temp->next = NULL;
-  temp1->next = temp;
+  temp->label[16] = '\0';
+  temp->chFlag = charFlag;
+  temp->next = lst;
+  return temp;
   
  }
 
-uint8_t isServiceLabel(struct ProgramServiceLabel *lst,uint16_t SId){
-  
-  struct ProgramServiceLabel *list;
-  list = lst;
-  while (list->next != NULL) {
-    list = list->next; 
-    if (list->SId == SId)
-      return 1;   
-  }
-  list = lst;
-  //system("clear");
-  fprintf (stderr,"\nProgram list:--------------------------------\n");
-  fprintf(stderr,"Service ID --- Label\n");
-  while (list->next != NULL) {
-    list = list->next; 
-    
-    fprintf(stderr,"%10u  ---  %s\n",list->SId, list->label);
-  }
-  return 0;
-  
-}
 
 
-uint8_t dab_fig_type_1(uint8_t * fig,ServiceInformation * sinfo){
+
+uint8_t dab_fig_type_1(uint8_t * fig,Ensemble * sinfo){
   uint8_t extension = fig[0] & 0x03;
   //fprintf(stderr,"%u\n",extension);
   
   if (extension == 0) {
     //fprintf(stderr,"FIG 1/0\n");
+    sinfo->esl->EId = ((uint16_t)fig[1]<<8) + fig[2];
+    memcpy(sinfo->esl->label,&fig[3],16);
+    sinfo->esl->label[16] = '\0';
+    sinfo->esl->chFlag = ((uint16_t)fig[4]<<8) + fig[5];
   }
   if (extension == 1) {
-    if (sinfo->psl != NULL) {
-      if (isServiceLabel(sinfo->psl,((uint16_t)fig[1]<<8) + fig[2])==0){
-	appendServiceLabel(sinfo->psl,((uint16_t)fig[1]<<8) + fig[2],&fig[3],
-			   ((uint16_t)fig[4]<<8) + fig[5]);
-      }
-    }	else {
-      appendServiceLabel(sinfo->psl,((uint16_t)fig[1]<<8) + fig[2],&fig[3],
-      	 ((uint16_t)fig[4]<<8) + fig[5]);
-    }
+    sinfo->psl = appendServiceLabel(sinfo->psl,((uint16_t)fig[1]<<8) + fig[2],&fig[3],
+		       ((uint16_t)fig[4]<<8) + fig[5]);
+    
+  }
+  /* FIG 1/3 region Label */
+  if (extension == 3) {
+    //++fig;
+    //fprintf(stderr,"%s\n",++fig);
+  }
+  if (extension == 5) {
+    //fprintf(stderr,"FIG 1/5\n");
+    //fprintf(stderr,"%u\n",(uint32_t)fig);
   }
   
 }

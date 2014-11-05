@@ -36,9 +36,39 @@ static sem_t data_ready;
 
 
 uint32_t corr_counter;
+uint32_t ccount=0;
 
 //ServiceInformation sinfo;
 Ensemble sinfo;
+
+
+void print_status(void) {
+  fprintf(stderr,"ENSEMBLE STATUS:                                 \n");
+  fprintf(stderr,"-------------------------------------------------\n");
+  fprintf(stderr,"locked: %u \n",sinfo.locked);
+  
+  fprintf(stderr,"Subchannel Organization:                         \n");
+  struct BasicSubchannelOrganization *sco;
+  sco = sinfo.sco;
+  while (sco->next != NULL) {
+    fprintf(stderr,"SubChId: %2u | StartAddr: %4u | sl:%u | subchannelSize: %u   \n",
+	    sco->SubChId,sco->startAddr,sco->shortlong,sco->subchannelSize);
+    sco = sco->next;
+  }
+  struct ServiceList *sl;
+  sl = sinfo.sl;
+  while (sl->next != NULL) {
+    fprintf(stderr,"SId: %8X | SubChId: %2u | SCId %u\n",sl->SId,sl->scp->SubChId,sl->scp->SCId);
+    sl = sl->next;
+  }
+ struct ProgrammeServiceLabel *psl;
+ psl = sinfo.psl;
+ while (psl->next != NULL) {
+   fprintf(stderr,"SId: %8X | Label: %s \n",psl->SId,psl->label);
+   psl = psl->next;
+ }
+ 
+}
 
 static void sighandler(int signum)
 {
@@ -64,6 +94,11 @@ static void *demod_thread_fn(void *arg)
 	fprintf(stderr,"cfs : %i\n",dab->coarse_freq_shift);
 	fprintf(stderr,"ffs : %f\n",dab->fine_freq_shift);
       }
+    }
+    ccount += 1;
+    if (ccount == 100) {
+      ccount = 0;
+      print_status();
     }
   }
   return 0;
@@ -96,7 +131,7 @@ int main (int argc, char **argv)
 
   int gain = AUTO_GAIN;
   dab_state dab;
-  dab.frequency = 220352000;//222064000-9000;//178352000-6000;
+  dab.frequency = 229072000;//178352000;//220352000;//222064000-9000;//178352000-6000;
 
   fprintf(stderr,"\n");
   fprintf(stderr,"rtldab %s \n",VERSION);

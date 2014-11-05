@@ -68,8 +68,8 @@ dab.input_buffer_len = 16*16384;
  fprintf(stderr,"ENSEMBLE STATUS:                                 \n");
  fprintf(stderr,"-------------------------------------------------\n");
  fprintf(stderr,"locked: %u \n",sinfo.locked);
- 
- fprintf(stderr,"Subchannel Organization:                         \n");
+ fprintf(stderr,"EnsembleLabel: %s \n",sinfo.esl->label);
+ fprintf(stderr,"\nSubchannel Organization:                         \n");
  struct BasicSubchannelOrganization *sco;
  sco = sinfo.sco;
  while (sco->next != NULL) {
@@ -77,13 +77,20 @@ dab.input_buffer_len = 16*16384;
 	   sco->SubChId,sco->startAddr,sco->shortlong,sco->subchannelSize);
    sco = sco->next;
  }
+ fprintf(stderr,"\nService Information:                         \n");
  struct ServiceList *sl;
  sl = sinfo.sl;
  while (sl->next != NULL) {
    fprintf(stderr,"SId: %8X | SubChId: %2u | SCId %u\n",sl->SId,sl->scp->SubChId,sl->scp->SCId);
    sl = sl->next;
  }
- 
+ fprintf(stderr,"\nService Labels:                         \n");
+ struct ProgrammeServiceLabel *psl;
+ psl = sinfo.psl;
+ while (psl->next != NULL) {
+   fprintf(stderr,"SId: %8X | Label: %s \n",psl->SId,psl->label);
+   psl = psl->next;
+  }
  
  return 1;
 }

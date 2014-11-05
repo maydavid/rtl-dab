@@ -10,6 +10,8 @@ typedef struct{
   uint8_t locked;
   struct ServiceList *sl;
   struct BasicSubchannelOrganization *sco;
+  struct ProgrammeServiceLabel *psl;
+  struct EnsembleLabel *esl;
   
 
 }Ensemble;
@@ -52,11 +54,28 @@ struct BasicSubchannelOrganization {
   struct BasicSubchannelOrganization * next;
 };
 
+/* FIG 1/1 */
+struct ProgrammeServiceLabel {
+  uint8_t charset;
+  uint8_t OE;
+  uint8_t extension;
+  uint16_t SId;
+  uint8_t label[17];
+  uint16_t chFlag;
+  struct ProgrammeServiceLabel * next;
+};
 
-
+struct EnsembleLabel {
+  uint8_t charset;
+  uint8_t OE;
+  uint8_t extension;
+  uint16_t EId;
+  uint8_t label[17];
+  uint16_t chFlag;
+};
 
 uint8_t dab_fic_parser(uint8_t fibs[12][256],Ensemble * ens);
 void dab_fic_parser_init(Ensemble *ens);
 
-//uint8_t dab_fig_type_1(uint8_t * fig,ServiceInformation * sinfo);
+uint8_t dab_fig_type_1(uint8_t * fig,Ensemble * ens);
 uint8_t dab_fig_type_0(uint8_t * fig,Ensemble * ens,uint32_t length);
