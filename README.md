@@ -1,22 +1,25 @@
-rtl-dab
-=======
+# rtl-dab
 
 DAB/DAB+ receiver to use with rtl-sdr sticks
 
 Features:
+* FIC decoding
 * Only Mode I supported.
 
-# This project uses snippets from:
+### This project uses snippets from:
 
-## David Crawley https://github.com/chrisa/opendab GPL, v3
-## Phil Karn http://www.ka9q.net/code/fec/ GPL
-## Andreas Müller https://github.com/andrmuel/gr-dab GPL, v3
+* David Crawley https://github.com/chrisa/opendab GPL, v3
+* Phil Karn http://www.ka9q.net/code/fec/ GPL
+* Andreas Müller https://github.com/andrmuel/gr-dab GPL, v3
 
 
-# Status:
+### Status:
 
-## 01/10/2012
-FIC decoding (i.e. correct crc check) works, however source files need to be cleaned up and added to repository.
-## 05/11/2014
-Finally I found the motivation to work again on this project
+#### 01/10/2012
+
+* FIC decoding (i.e. correct crc check) works, however source files need to be cleaned up and added to repository.
+
+#### 05/11/2014
+
+* Finally I found the motivation to work again on this project. The first steps will be to fix the synchronization algorithms
 
