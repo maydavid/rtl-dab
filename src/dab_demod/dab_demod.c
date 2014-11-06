@@ -49,7 +49,7 @@ int8_t dab_demod(dab_state *dab){
 
   /* coarse time sync */
   /* performance bottleneck atm */
-  dab->coarse_timeshift = dab_coarse_time_sync(dab->real,dab->input_buffer,dab->filt);
+  dab->coarse_timeshift = dab_coarse_time_sync(dab->real,dab->filt);
   // we are not in sync so -> next frame
   if (dab->coarse_timeshift) {
     return 0;
@@ -61,7 +61,7 @@ int8_t dab_demod(dab_state *dab){
   }
 
   /* fine time sync */
-  dab->fine_timeshift = dab_fine_time_sync(dab->dab_frame,dab->prs_syms);
+  dab->fine_timeshift = dab_fine_time_sync(dab->dab_frame);
 
   /* coarse_frequency shift */
   fftw_plan p;
@@ -236,8 +236,6 @@ void dab_demod_init(dab_state * dab){
   dab->prs_ifft =( fftw_complex*) fftw_malloc(sizeof(fftw_complex) * (2048 + 32));
   dab->prs_conj_ifft = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * (2048 + 32));
   dab->prs_syms = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * (2048 + 32));
-  // generate prsn 
-  prsgen(dab->prs_ifft,dab->prs_conj_ifft,dab->prs_syms);
   // init interleaver table
   init_f_interl_table(dab);
   // init viterbi decoder

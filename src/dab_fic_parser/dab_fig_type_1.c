@@ -72,5 +72,5 @@ uint8_t dab_fig_type_1(uint8_t * fig,Ensemble * sinfo){
     //fprintf(stderr,"FIG 1/5\n");
     //fprintf(stderr,"%u\n",(uint32_t)fig);
   }
-  
+  return 0;
 }

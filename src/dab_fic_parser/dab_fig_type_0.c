@@ -248,4 +248,5 @@ uint8_t dab_fig_type_0(uint8_t * fig,Ensemble * ens, uint32_t length){
 
 
   }
+  return 0;
 }

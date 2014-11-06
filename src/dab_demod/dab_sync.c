@@ -28,7 +28,7 @@ float mag_squared(fftw_complex sample) {
     return x * x + y *y;
 }
 
-uint32_t dab_coarse_time_sync(int8_t * real,uint8_t * buffer,float * filt) {
+uint32_t dab_coarse_time_sync(int8_t * real, float * filt) {
 
   int32_t tnull = 2656; // was 2662? why?
   int32_t j,k;
@@ -64,13 +64,13 @@ uint32_t dab_coarse_time_sync(int8_t * real,uint8_t * buffer,float * filt) {
 }
 
 
-int32_t dab_fine_time_sync(fftw_complex * frame,fftw_complex * prs){
+int32_t dab_fine_time_sync(fftw_complex * frame){
 
   /* correlation in frequency domain 
      e.g. J.Cho "PC-based receiver for Eureka-147" 2001
      e.g. K.Taura "A DAB receiver" 1996
   */
-#define dbg 1
+#define dbg 0
   int k;
 #if dbg
   FILE *fh0;
