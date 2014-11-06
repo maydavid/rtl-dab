@@ -181,10 +181,6 @@ int32_t dab_fine_time_sync(fftw_complex * frame,fftw_complex * prs){
       maxPos = i;
       maxVal = tempVal;
     }
-#if dbg
-    //fprintf(stderr,"%f\n",tempVal);
-#endif
-
   }
   
 
@@ -192,8 +188,12 @@ int32_t dab_fine_time_sync(fftw_complex * frame,fftw_complex * prs){
 #if dbg
   fprintf(stderr,"Fine time shift: %d\n",maxPos);
 #endif
-  //return maxPos;
-  return 0;
+  if (maxPos<1536/2) {
+    return maxPos*2+16;
+  } else {
+    return ((maxPos-(1536))*2);
+  }
+  //return 0;
 }
 
 /* adapted from gr-dab (c) Andreas Müller*/

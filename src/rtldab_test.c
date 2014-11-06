@@ -39,7 +39,7 @@ int corr_counter;
 Ensemble sinfo;
 
 int main(void){
-
+  int i;
   dab_state dab;
   int frequency = 222055000;
   
@@ -53,11 +53,12 @@ int main(void){
   // init FIC parser 
   dab_fic_parser_init(&sinfo);
 
-  // fill buffer
-  //fread(dab.input_buffer,1,16*16384,fh);
-  //dab.input_buffer_len = 16*16384;
+  // fill buffer and let the autogain settle
+  for (i=0;i<20;i++) {
+  fread(dab.input_buffer,1,16*16384,fh);
+  dab.input_buffer_len = 16*16384;
+  }
   
-  int i;
   for (i=0;i<100;i++) {
     // read next dab frame
     fread(dab.input_buffer,1,16*16384,fh);

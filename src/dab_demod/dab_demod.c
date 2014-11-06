@@ -50,7 +50,10 @@ int8_t dab_demod(dab_state *dab){
   /* coarse time sync */
   /* performance bottleneck atm */
   dab->coarse_timeshift = dab_coarse_time_sync(dab->real,dab->input_buffer,dab->filt);
-
+  // we are not in sync so -> next frame
+  if (dab->coarse_timeshift) {
+    return 0;
+  }
   /* create complex frame */
   for (j=0;j<196608;j++){
     dab->dab_frame[j][0] = dab->real[j];
