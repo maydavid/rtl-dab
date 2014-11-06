@@ -21,5 +21,5 @@ Features:
 
 #### 05/11/2014
 
-* Finally I found the motivation to work again on this project
+* Finally I found the motivation to work again on this project. The first steps will be to fix the synchronization algorithms
 
