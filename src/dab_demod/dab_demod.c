@@ -58,7 +58,7 @@ int8_t dab_demod(dab_state *dab){
   }
 
   /* fine time sync */
-  dab->fine_timeshift = dab_fine_time_sync(dab->dab_frame,dab->prs_ifft);
+  dab->fine_timeshift = dab_fine_time_sync(dab->dab_frame,dab->prs_syms);
 
   /* coarse_frequency shift */
   fftw_plan p;

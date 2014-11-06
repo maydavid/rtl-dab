@@ -73,8 +73,8 @@ int main(void){
       corr_counter++;
       corr_counter = 0 ;
       frequency = frequency - dab.fine_freq_shift;// + dab2->coarse_freq_shift*1000;
-      fprintf(stderr,"cfs : %i\n",dab.coarse_freq_shift);
-      fprintf(stderr,"ffs : %f\n",dab.fine_freq_shift);
+      //fprintf(stderr,"cfs : %i\n",dab.coarse_freq_shift);
+      //fprintf(stderr,"ffs : %f\n",dab.fine_freq_shift);
     }
   } 
   

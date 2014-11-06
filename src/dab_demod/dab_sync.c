@@ -20,6 +20,7 @@ david.may.muc@googlemail.com
 */
 
 #include "dab_sync.h"
+#include "prs.h"
 
 float mag_squared(fftw_complex sample) {
     float x = sample[0];
@@ -37,7 +38,7 @@ uint32_t dab_coarse_time_sync(int8_t * real,uint8_t * buffer,float * filt) {
   float threshold=5000;
   for (k=0;k<tnull;k+=10)
     e = e +(float) abs(real[k]);
-  //fprintf(stderr,"sum over nullsymbol: %f",e);
+  fprintf(stderr,"Energy over nullsymbol: %f\n",e);
   if (e<threshold)
     return 0;
 
@@ -63,41 +64,136 @@ uint32_t dab_coarse_time_sync(int8_t * real,uint8_t * buffer,float * filt) {
 }
 
 
-int32_t dab_fine_time_sync(fftw_complex * frame,fftw_complex * prs_ifft){
+int32_t dab_fine_time_sync(fftw_complex * frame,fftw_complex * prs){
 
-  fftw_complex mulres[2048];
-  float mulres_abs[2048];
-  float mulres_sum[41];
-  int32_t i,j;
-  float minVal=0;
-  int32_t minPos;
-
-  for (j=-20;j<21;j++){
-    mulres_sum[j+20] = 0;
+  /* correlation in frequency domain 
+     e.g. J.Cho "PC-based receiver for Eureka-147" 2001
+     e.g. K.Taura "A DAB receiver" 1996
+  */
+#define dbg 1
+  int k;
+#if dbg
+  FILE *fh0;
+  fh0 = fopen("prs_received.dat","w+");
+  for(k=0;k<2048;k++) {
+    fprintf(fh0,"%f\n",(frame[2656+504+k][0]));
+    fprintf(fh0,"%f\n",(frame[2654+504+k][1]));
   }
-  for(i=0;i<2048;i++)
-      mulres_abs[i] = 0;
+  fclose(fh0);
+#endif
 
-  for (j=-20;j<21;j++){
-    for (i=0;i<2048;i++){
-      mulres[i][0] = (frame[2656+j+i][0]*prs_ifft[i][0]-frame[2656+j+i][1]*prs_ifft[i][1]);
-      mulres[i][1] = (frame[2656+j+i][0]*prs_ifft[i][1]+frame[2656+j+i][1]*prs_ifft[i][0]);
+
+
+  /* first we have to transfer the receive prs symbol in frequency domain */
+  fftw_complex prs_received_fft[2048];
+  fftw_plan p;
+  p = fftw_plan_dft_1d(2048, &frame[2656+504], &prs_received_fft[0], FFTW_FORWARD, FFTW_ESTIMATE);
+  fftw_execute(p);
+#if dbg
+  FILE *fh1;
+  fh1 = fopen("prs_received_fft.dat","w+");
+  for(k=0;k<2048;k++) {
+    fprintf(fh1,"%f\n",(prs_received_fft[k][0]));
+    fprintf(fh1,"%f\n",(prs_received_fft[k][1]));
+  }
+  fclose(fh1);
+#endif
+  /* now we build the complex conjugate of the known prs */
+  // 1536 as only the carries are used
+  fftw_complex prs_star[1536];
+  int i;
+  for (i=0;i<1536;i++) {
+    prs_star[i][0] = prs_static[i][0];
+    prs_star[i][1] = -1 *  prs_static[i][1];
+  }
+#if dbg
+  FILE *fh2;
+  fh2 = fopen("prs_star.dat","w+");
+  for(k=0;k<1536;k++) {
+    fprintf(fh2,"%f\n",(prs_star[k][0]));
+    fprintf(fh2,"%f\n",(prs_star[k][1]));
+  }
+  fclose(fh2);
+#endif
+
+
+  /* fftshift the received prs
+     at this point we have to be coarse frequency sync 
+     however we can simply shift the bins */
+  fftw_complex prs_rec_shift[1536];
+  // TODO allow for coarse frequency shift !=0 
+  int32_t cf_shift = 0;
+  // matlab notation (!!!-1)
+  // 769:1536+s
+  //  2:769+s why 2? I dont remember, but peak is very strong
+  for (i=0;i<1536;i++) {
+    if (i<768) {
+      prs_rec_shift[i][0] = prs_received_fft[i+1280][0];
+      prs_rec_shift[i][1] = prs_received_fft[i+1280][1];
     }
-    for(i=0;i<2048;i++){
-      mulres_abs[i] = sqrt((mulres[i][1]*mulres[i][1])+(mulres[i][0]*mulres[i][0]));
+    if (i>=768) {
+      prs_rec_shift[i][0] = prs_received_fft[i-765][0];
+      prs_rec_shift[i][1] = prs_received_fft[i-765][1];
+
     }
-    for(i=0;i<2048;i++)
-      mulres_sum[j+20] = mulres_sum[j+20] + mulres_abs[i]; 
+  }
+#if dbg
+  FILE *fh3;
+  fh3 = fopen("prs_rec_shift.dat","w+");
+  for(k=0;k<1536;k++) {
+    fprintf(fh3,"%f\n",(prs_rec_shift[k][0]));
+    fprintf(fh3,"%f\n",(prs_rec_shift[k][1]));
+  }
+  fclose(fh3);
+#endif
+
+
+  
+  /* now we convolute both symbols */
+  fftw_complex convoluted_prs[1536];
+  int s;
+  for (s=0;s<1536;s++) {
+    convoluted_prs[s][0] = prs_rec_shift[s][0]*prs_star[s][0]-prs_rec_shift[s][1]*prs_star[s][1];
+    convoluted_prs[s][1] = prs_rec_shift[s][0]*prs_star[s][1]+prs_rec_shift[s][1]*prs_star[s][0];
   }
 
-  for (j=0;j<41;j++){
-    if (mulres_sum[j]>minVal) {
-      minVal = mulres_sum[j];
-      minPos = j;
-    }
+  /* and finally we transfer the convolution back into time domain */
+  fftw_complex convoluted_prs_time[1536]; 
+  fftw_plan px;
+  px = fftw_plan_dft_1d(1536, &convoluted_prs[0], &convoluted_prs_time[0], FFTW_BACKWARD, FFTW_ESTIMATE);
+  fftw_execute(px);
+#if dbg
+  FILE *fh4;
+  fh4 = fopen("convoluted_prs_time.dat","w+");
+  for(k=0;k<1536;k++) {
+    fprintf(fh4,"%f\n",(convoluted_prs_time[k][0]));
+    fprintf(fh4,"%f\n",(convoluted_prs_time[k][1]));
   }
-  return (minPos-21)*2;
+  fclose(fh4);
+#endif
 
+  uint32_t maxPos=0;
+  float tempVal = 0;
+  float maxVal=-99999;
+  for (i=0;i<1536;i++) {
+    tempVal = sqrt((convoluted_prs_time[i][0]*convoluted_prs_time[i][0])+(convoluted_prs_time[i][1]*convoluted_prs_time[i][1]));
+    if (tempVal>maxVal) {
+      maxPos = i;
+      maxVal = tempVal;
+    }
+#if dbg
+    //fprintf(stderr,"%f\n",tempVal);
+#endif
+
+  }
+  
+
+
+#if dbg
+  fprintf(stderr,"Fine time shift: %d\n",maxPos);
+#endif
+  //return maxPos;
+  return 0;
 }
 
 /* adapted from gr-dab (c) Andreas Müller*/

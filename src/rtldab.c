@@ -84,6 +84,7 @@ static void *demod_thread_fn(void *arg)
     sem_wait(&data_ready);
     dab_demod(dab);
     dab_fic_parser(dab->fib,&sinfo);
+    /*
     if ((abs(dab->fine_freq_shift) > 20) || (abs(dab->coarse_freq_shift) > 1)) {
       corr_counter++;
       if (corr_counter > 10) {
@@ -95,11 +96,14 @@ static void *demod_thread_fn(void *arg)
 	fprintf(stderr,"ffs : %f\n",dab->fine_freq_shift);
       }
     }
+    */
+    /*
     ccount += 1;
     if (ccount == 100) {
       ccount = 0;
       print_status();
     }
+    */
   }
   return 0;
 }
