@@ -22,6 +22,8 @@ david.may.muc@googlemail.com
 #include "dab_sync.h"
 #include "prs.h"
 
+#define dbg 0
+
 float mag_squared(fftw_complex sample) {
     float x = sample[0];
     float y = sample[1];
@@ -29,7 +31,6 @@ float mag_squared(fftw_complex sample) {
 }
 
 uint32_t dab_coarse_time_sync(int8_t * real, float * filt) {
-
   int32_t tnull = 2656; // was 2662? why?
   int32_t j,k;
 
@@ -38,7 +39,9 @@ uint32_t dab_coarse_time_sync(int8_t * real, float * filt) {
   float threshold=5000;
   for (k=0;k<tnull;k+=10)
     e = e +(float) abs(real[k]);
+#if dbg
   fprintf(stderr,"Energy over nullsymbol: %f\n",e);
+#endif
   if (e<threshold)
     return 0;
 
@@ -70,7 +73,6 @@ int32_t dab_fine_time_sync(fftw_complex * frame){
      e.g. J.Cho "PC-based receiver for Eureka-147" 2001
      e.g. K.Taura "A DAB receiver" 1996
   */
-#define dbg 0
   int k;
 #if dbg
   FILE *fh0;
@@ -224,6 +226,47 @@ int32_t dab_coarse_freq_sync(fftw_complex * symbols){
   return (int32_t)(index+(d_num_carriers/2)-(d_fft_length/2));
 }
 
+int32_t dab_coarse_freq_sync_2(fftw_complex * symbols){
+  uint32_t len = 16;
+  fftw_complex convoluted_prs[len];
+  int s;
+  for (s=0;s<len;s++) {
+    convoluted_prs[s][0] = prs_static[s][0]*symbols[256+s][0]-
+      prs_static[768+s][1]*symbols[256+s][1];
+    convoluted_prs[s][1] = prs_static[s][0]*symbols[256+s][1]+
+      prs_static[768+s][1]*symbols[256+s][0];
+  }
+  fftw_complex convoluted_prs_time[len]; 
+  fftw_plan px;
+  px = fftw_plan_dft_1d(len, &convoluted_prs[0], &convoluted_prs_time[0], FFTW_BACKWARD, FFTW_ESTIMATE);
+  fftw_execute(px);
+
+
+#if dbg
+  FILE *fh0;
+  fh0 = fopen("convoluted_prs_coarse.dat","w+");
+  for(s=0;s<len;s++) {
+    fprintf(fh0,"%f\n",(convoluted_prs_time[s][0]));
+    fprintf(fh0,"%f\n",(convoluted_prs_time[s][1]));
+  }
+  fclose(fh0);
+#endif
+  uint32_t maxPos=0;
+  float tempVal = 0;
+  float maxVal=-99999;
+  for (s=0;s<len;s++) {
+    tempVal = sqrt((convoluted_prs_time[s][0]*convoluted_prs_time[s][0])+(convoluted_prs_time[s][1]*convoluted_prs_time[s][1]));
+    if (tempVal>maxVal) {
+      maxPos = s;
+      maxVal = tempVal;
+    }
+  }
+  if (maxPos<len/2){
+    return maxPos;
+  } else {
+    return (len-2-maxPos);
+  }
+}
 
 double dab_fine_freq_corr(fftw_complex * dab_frame,int32_t fine_timeshift){
   fftw_complex *left;

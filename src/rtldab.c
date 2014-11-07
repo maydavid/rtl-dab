@@ -84,26 +84,31 @@ static void *demod_thread_fn(void *arg)
     sem_wait(&data_ready);
     dab_demod(dab);
     dab_fic_parser(dab->fib,&sinfo);
+    fprintf(stderr,"cts : %i\n",dab->coarse_timeshift);
+    fprintf(stderr,"fts : %i\n",dab->fine_timeshift);
+    fprintf(stderr,"cfs : %i\n",dab->coarse_freq_shift);
     /*
     if ((abs(dab->fine_freq_shift) > 20) || (abs(dab->coarse_freq_shift) > 1)) {
       corr_counter++;
       if (corr_counter > 10) {
 	corr_counter = 0 ;
-	dab->frequency = dab->frequency - dab->fine_freq_shift + dab->coarse_freq_shift*1000;
+	dab->frequency = dab->frequency - dab->fine_freq_shift; //+ dab->coarse_freq_shift*1000;
 	rtlsdr_set_center_freq(dev,dab->frequency);
 	fprintf(stderr,"new center freq : %i\n",rtlsdr_get_center_freq(dev));
-	fprintf(stderr,"cfs : %i\n",dab->coarse_freq_shift);
+	//fprintf(stderr,"cts : %i\n",dab->coarse_timeshift);
+	//fprintf(stderr,"fts : %i\n",dab->fine_timeshift);
+	//printf(stderr,"cfs : %i\n",dab->coarse_freq_shift);
 	fprintf(stderr,"ffs : %f\n",dab->fine_freq_shift);
       }
     }
     */
-    /*
+    
     ccount += 1;
     if (ccount == 100) {
       ccount = 0;
       print_status();
     }
-    */
+    
   }
   return 0;
 }
@@ -135,7 +140,8 @@ int main (int argc, char **argv)
 
   int gain = AUTO_GAIN;
   dab_state dab;
-  dab.frequency = 229072000;//178352000;//220352000;//222064000-9000;//178352000-6000;
+  dab.frequency = 222064000;//222064000-8000;
+  //229072000;//178352000;//220352000;//222064000-9000;//178352000-6000;
 
   fprintf(stderr,"\n");
   fprintf(stderr,"rtldab %s \n",VERSION);
@@ -231,6 +237,7 @@ int main (int argc, char **argv)
   -----------------------------------------------*/
   dab_demod_init(&dab);
   dab_fic_parser_init(&sinfo);
+
   pthread_create(&demod_thread, NULL, demod_thread_fn, (void *)(&dab));
   rtlsdr_read_async(dev, rtlsdr_callback, (void *)(&dab),
 			      DEFAULT_ASYNC_BUF_NUMBER, DEFAULT_BUF_LENGTH);

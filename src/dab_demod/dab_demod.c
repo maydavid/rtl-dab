@@ -37,7 +37,7 @@ int8_t dab_demod(dab_state *dab){
   
   /* read fifo */
   dab_read_fifo(&(dab->fifo),196608*2,dab->coarse_timeshift+dab->fine_timeshift,dab->buffer);
-  
+
   /* resetting coarse timeshift */
   dab->coarse_timeshift = 0;
 
@@ -46,7 +46,6 @@ int8_t dab_demod(dab_state *dab){
     dab->real[j/2]=dab->buffer[j]-127;
     dab->imag[j/2]=dab->buffer[j+1]-127;
   }
-
   /* coarse time sync */
   /* performance bottleneck atm */
   dab->coarse_timeshift = dab_coarse_time_sync(dab->real,dab->filt);
@@ -63,12 +62,14 @@ int8_t dab_demod(dab_state *dab){
   /* fine time sync */
   dab->fine_timeshift = dab_fine_time_sync(dab->dab_frame);
 
+ 
   /* coarse_frequency shift */
   fftw_plan p;
-  p = fftw_plan_dft_1d(2048, &dab->dab_frame[2656+504+dab->fine_timeshift], dab->symbols[0], FFTW_FORWARD, FFTW_ESTIMATE);
+  p = fftw_plan_dft_1d(2048, &dab->dab_frame[2656+505+dab->fine_timeshift], dab->symbols[0], FFTW_FORWARD, FFTW_ESTIMATE);
   fftw_execute(p);
+  
   fftw_complex tmp;
-  for (i = 0; i < 2048/2; i++)
+    for (i = 0; i < 2048/2; i++)
     {
       tmp[0]     = dab->symbols[0][i][0];
       tmp[1]     = dab->symbols[0][i][1];
@@ -77,28 +78,28 @@ int8_t dab_demod(dab_state *dab){
       dab->symbols[0][i+2048/2][0] = tmp[0];
       dab->symbols[0][i+2048/2][1] = tmp[1];
     }
-  dab->coarse_freq_shift = dab_coarse_freq_sync(dab->symbols[0]);
-
+  dab->coarse_freq_shift = dab_coarse_freq_sync_2(dab->symbols[0]);
 
   /* fine freq correction */
   dab->fine_freq_shift = dab_fine_freq_corr(dab->dab_frame,dab->fine_timeshift);
 
   /* d-qpsk */
   for (i=1;i<76;i++) {
-    p = fftw_plan_dft_1d(2048, &dab->dab_frame[2656+(2552*i)+504+dab->fine_timeshift],
+    p = fftw_plan_dft_1d(2048, &dab->dab_frame[2656+(2552*i)+504],
 		       dab->symbols[i], FFTW_FORWARD, FFTW_ESTIMATE);
-  fftw_execute(p);
-  for (j = 0; j < 2048/2; j++)
-    {
-      tmp[0]     = dab->symbols[i][j][0];
-      tmp[1]     = dab->symbols[i][j][1];
-      dab->symbols[i][j][0]    = dab->symbols[i][j+2048/2][0];
-      dab->symbols[i][j][1]    = dab->symbols[i][j+2048/2][1];
-      dab->symbols[i][j+2048/2][0] = tmp[0];
-      dab->symbols[i][j+2048/2][1] = tmp[1];
+    fftw_execute(p);
+    for (j = 0; j < 2048/2; j++)
+      {
+	tmp[0]     = dab->symbols[i][j][0];
+	tmp[1]     = dab->symbols[i][j][1];
+	dab->symbols[i][j][0]    = dab->symbols[i][j+2048/2][0];
+	dab->symbols[i][j][1]    = dab->symbols[i][j+2048/2][1];
+	dab->symbols[i][j+2048/2][0] = tmp[0];
+	dab->symbols[i][j+2048/2][1] = tmp[1];
     }
-  
+    
   }
+
   for (j=1;j<75;j++) {
     for (i=0;i<2048;i++)
       {
@@ -140,20 +141,20 @@ int8_t dab_demod(dab_state *dab){
       dab->symbols_dc_fd[(i*1536)+j][1] = dab->symbols_dc[(i*1536)+k][1];
     } 
   }
-
-   /* demapping */
+  
+  /* demapping */
   for (i=0;i<75;i++){
     for (j=0;j<1536*2;j++){
       if (j<1536){
 	dab->symbols_demapped[i][j] = (dab->symbols_dc_fd[(i*1536)+j][0]>0) ? 0:1;
-	}
+      }
       else if (j>=1536) {
 	dab->symbols_demapped[i][j] = (dab->symbols_dc_fd[(i*1536)+(j-1536)][1] > 0) ? 1:0;
       }
     }
   }
-  /* block partitioning */
   
+  /* block partitioning */
   for (i=0;i<1536*2;i++){
           dab->FIC[i+3072*0] = dab->symbols_demapped[0][i];
           dab->FIC[i+3072*1] = dab->symbols_demapped[1][i];
