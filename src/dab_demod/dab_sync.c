@@ -30,7 +30,7 @@ float mag_squared(fftw_complex sample) {
     return x * x + y *y;
 }
 
-uint32_t dab_coarse_time_sync(int8_t * real, float * filt) {
+uint32_t dab_coarse_time_sync(int8_t * real, float * filt, uint8_t force_timesync) {
   int32_t tnull = 2656; // was 2662? why?
   int32_t j,k;
 
@@ -42,9 +42,9 @@ uint32_t dab_coarse_time_sync(int8_t * real, float * filt) {
 #if dbg
   fprintf(stderr,"Energy over nullsymbol: %f\n",e);
 #endif
-  if (e<threshold)
+  if (e<threshold && (force_timesync==0))
     return 0;
-
+  fprintf(stderr,"Resync\n");
   // energy was to high so we assume we are not in sync
   // subsampled filter to detect where the null symbol is
   for (j=0;j<(196608-tnull)/10;j++)
@@ -77,9 +77,9 @@ int32_t dab_fine_time_sync(fftw_complex * frame){
 #if dbg
   FILE *fh0;
   fh0 = fopen("prs_received.dat","w+");
-  for(k=0;k<2048;k++) {
-    fprintf(fh0,"%f\n",(frame[2656+504+k][0]));
-    fprintf(fh0,"%f\n",(frame[2654+504+k][1]));
+  for(k=0;k<2552;k++) {
+    fprintf(fh0,"%f\n",(frame[2656+k][0]));
+    fprintf(fh0,"%f\n",(frame[2656+k][1]));
   }
   fclose(fh0);
 #endif
@@ -227,59 +227,70 @@ int32_t dab_coarse_freq_sync(fftw_complex * symbols){
 }
 
 int32_t dab_coarse_freq_sync_2(fftw_complex * symbols){
-  uint32_t len = 16;
+  uint32_t len = 128;
   fftw_complex convoluted_prs[len];
   int s;
-  for (s=0;s<len;s++) {
-    convoluted_prs[s][0] = prs_static[s][0]*symbols[256+s][0]-
-      prs_static[768+s][1]*symbols[256+s][1];
-    convoluted_prs[s][1] = prs_static[s][0]*symbols[256+s][1]+
-      prs_static[768+s][1]*symbols[256+s][0];
-  }
-  fftw_complex convoluted_prs_time[len]; 
-  fftw_plan px;
-  px = fftw_plan_dft_1d(len, &convoluted_prs[0], &convoluted_prs_time[0], FFTW_BACKWARD, FFTW_ESTIMATE);
-  fftw_execute(px);
-
-
+  int freq_hub = 14; // + and - center freq
+  int k;
+  float global_max = -99999;
+  int global_max_pos; 
+  for (k=-freq_hub;k<=freq_hub;k++) {
+    
+    for (s=0;s<len;s++) {
+      convoluted_prs[s][0] = prs_static[freq_hub+s][0]*symbols[freq_hub+k+256+s][0]-
+	(-1)*prs_static[freq_hub+s][1]*symbols[freq_hub+k+256+s][1];
+      convoluted_prs[s][1] = prs_static[freq_hub+s][0]*symbols[freq_hub+k+256+s][1]+
+	(-1)*prs_static[freq_hub+s][1]*symbols[freq_hub+k+256+s][0];
+    }
+    fftw_complex convoluted_prs_time[len]; 
+    fftw_plan px;
+    px = fftw_plan_dft_1d(len, &convoluted_prs[0], &convoluted_prs_time[0], FFTW_BACKWARD, FFTW_ESTIMATE);
+    fftw_execute(px);
+    
+    
 #if dbg
-  FILE *fh0;
-  fh0 = fopen("convoluted_prs_coarse.dat","w+");
-  for(s=0;s<len;s++) {
-    fprintf(fh0,"%f\n",(convoluted_prs_time[s][0]));
-    fprintf(fh0,"%f\n",(convoluted_prs_time[s][1]));
-  }
-  fclose(fh0);
+    FILE *fh0;
+    fh0 = fopen("convoluted_prs_coarse.dat","w+");
+    for(s=0;s<len;s++) {
+      fprintf(fh0,"%f\n",(convoluted_prs_time[s][0]));
+      fprintf(fh0,"%f\n",(convoluted_prs_time[s][1]));
+    }
+    fclose(fh0);
 #endif
-  uint32_t maxPos=0;
-  float tempVal = 0;
-  float maxVal=-99999;
-  for (s=0;s<len;s++) {
-    tempVal = sqrt((convoluted_prs_time[s][0]*convoluted_prs_time[s][0])+(convoluted_prs_time[s][1]*convoluted_prs_time[s][1]));
-    if (tempVal>maxVal) {
-      maxPos = s;
-      maxVal = tempVal;
+    
+    uint32_t maxPos=0;
+    float tempVal = 0;
+    float maxVal=-99999;
+    for (s=0;s<len;s++) {
+      tempVal = sqrt((convoluted_prs_time[s][0]*convoluted_prs_time[s][0])+(convoluted_prs_time[s][1]*convoluted_prs_time[s][1]));
+      if (tempVal>maxVal) {
+	maxPos = s;
+	maxVal = tempVal;
+      }
+    }
+    //fprintf(stderr,"%f ",maxVal);
+    
+    
+    if (maxVal>global_max) {
+      global_max = maxVal;
+      global_max_pos = k;
     }
   }
-  if (maxPos<len/2){
-    return maxPos;
-  } else {
-    return (len-2-maxPos);
-  }
+  //fprintf(stderr,"MAXPOS %d\n",global_max_pos);
+  return global_max_pos;
 }
-
 double dab_fine_freq_corr(fftw_complex * dab_frame,int32_t fine_timeshift){
   fftw_complex *left;
   fftw_complex *right;
   fftw_complex *lr;
   double angle[504];
-  double mean;
+  double mean=0;
   double ffs;
   left = fftw_malloc(sizeof(fftw_complex) * 504);
   right = fftw_malloc(sizeof(fftw_complex) * 504);
   lr = fftw_malloc(sizeof(fftw_complex) * 504);
   uint32_t i;
-
+  fine_timeshift = 0;
   for (i=0;i<504;i++) {
     left[i][0] = dab_frame[2656+2048+i+fine_timeshift][0];
     left[i][1] = dab_frame[2656+2048+i+fine_timeshift][1];
@@ -287,8 +298,8 @@ double dab_fine_freq_corr(fftw_complex * dab_frame,int32_t fine_timeshift){
     right[i][1] = dab_frame[2656+i+fine_timeshift][1];
   }
   for (i=0;i<504;i++){
-    lr[i][0] = (left[i][0]*right[i][0]-left[i][1]*-right[i][1]);
-    lr[i][1] = (left[i][0]*-right[i][1]+left[i][1]*right[i][0]);
+    lr[i][0] = (left[i][0]*right[i][0]-left[i][1]*(-1)*right[i][1]);
+    lr[i][1] = (left[i][0]*(-1)*right[i][1]+left[i][1]*right[i][0]);
   }
   
   for (i=0;i<504;i++){
@@ -297,10 +308,14 @@ double dab_fine_freq_corr(fftw_complex * dab_frame,int32_t fine_timeshift){
   for (i=0;i<504;i++){
     mean = mean + angle[i];
   }
-  mean = (mean/504) * -1;
-    
+  mean = (mean/504);
+  //printf("\n%f %f\n",left[0][0],left[0][1]);
+  //printf("\n%f %f\n",right[0][0],right[0][1]);
+  //printf("\n%f %f\n",lr[0][0],lr[0][1]);
+  //printf("\n%f\n",angle[0]);
+
   ffs = mean / (2 * M_PI) * 1000;
-  
+  //printf("\n%f\n",ffs);
     
  return ffs;
 }

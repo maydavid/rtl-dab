@@ -34,7 +34,6 @@ static sem_t data_ready;
 #define AUTO_GAIN -100
 #define DEFAULT_ASYNC_BUF_NUMBER 32
 
-
 uint32_t corr_counter;
 uint32_t ccount=0;
 
@@ -42,7 +41,11 @@ uint32_t ccount=0;
 Ensemble sinfo;
 
 
-void print_status(void) {
+void print_status(dab_state *dab) {
+  fprintf(stderr,"cts : %i\n",dab->coarse_timeshift);
+  fprintf(stderr,"fts : %i\n",dab->fine_timeshift);
+  fprintf(stderr,"cfs : %i\n",dab->coarse_freq_shift);
+  fprintf(stderr,"ffs : %f\n",dab->fine_freq_shift);
   fprintf(stderr,"ENSEMBLE STATUS:                                 \n");
   fprintf(stderr,"-------------------------------------------------\n");
   fprintf(stderr,"locked: %u \n",sinfo.locked);
@@ -84,29 +87,40 @@ static void *demod_thread_fn(void *arg)
     sem_wait(&data_ready);
     dab_demod(dab);
     dab_fic_parser(dab->fib,&sinfo);
-    fprintf(stderr,"cts : %i\n",dab->coarse_timeshift);
-    fprintf(stderr,"fts : %i\n",dab->fine_timeshift);
-    fprintf(stderr,"cfs : %i\n",dab->coarse_freq_shift);
-    /*
-    if ((abs(dab->fine_freq_shift) > 20) || (abs(dab->coarse_freq_shift) > 1)) {
-      corr_counter++;
-      if (corr_counter > 10) {
-	corr_counter = 0 ;
-	dab->frequency = dab->frequency - dab->fine_freq_shift; //+ dab->coarse_freq_shift*1000;
-	rtlsdr_set_center_freq(dev,dab->frequency);
-	fprintf(stderr,"new center freq : %i\n",rtlsdr_get_center_freq(dev));
-	//fprintf(stderr,"cts : %i\n",dab->coarse_timeshift);
-	//fprintf(stderr,"fts : %i\n",dab->fine_timeshift);
-	//printf(stderr,"cfs : %i\n",dab->coarse_freq_shift);
-	fprintf(stderr,"ffs : %f\n",dab->fine_freq_shift);
-      }
+    if (abs(dab->coarse_freq_shift)>1) {
+      if (dab->coarse_freq_shift<0)
+	dab->frequency = dab->frequency -1000;//+ 1000*dab->coarse_freq_shift;
+      else
+	dab->frequency = dab->frequency +1000;//- 1000*dab->coarse_freq_shift;
+      
+      rtlsdr_set_center_freq(dev,dab->frequency);
+      
     }
-    */
+    
+    if (abs(dab->coarse_freq_shift) ==1) {
+      
+      if (dab->coarse_freq_shift<0)
+	dab->frequency = dab->frequency -rand() % 1000;//+ 1000*dab->coarse_freq_shift;
+      else
+	dab->frequency = dab->frequency +rand() % 1000;//- 1000*dab->coarse_freq_shift;
+      
+      rtlsdr_set_center_freq(dev,dab->frequency);
+      //fprintf(stderr,"new center freq : %i\n",rtlsdr_get_center_freq(dev));
+      
+    } 
+    if (abs(dab->coarse_freq_shift)<1 && (abs(dab->fine_freq_shift) > 50)) {
+      dab->frequency = dab->frequency + (dab->fine_freq_shift/3);
+      rtlsdr_set_center_freq(dev,dab->frequency);
+      //fprintf(stderr,"ffs : %f\n",dab->fine_freq_shift);
+
+    }
+    
+  
     
     ccount += 1;
     if (ccount == 100) {
       ccount = 0;
-      print_status();
+      print_status(dab);
     }
     
   }
@@ -140,7 +154,7 @@ int main (int argc, char **argv)
 
   int gain = AUTO_GAIN;
   dab_state dab;
-  dab.frequency = 222064000;//222064000-8000;
+  dab.frequency = 222064000;
   //229072000;//178352000;//220352000;//222064000-9000;//178352000-6000;
 
   fprintf(stderr,"\n");

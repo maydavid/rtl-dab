@@ -31,6 +31,7 @@ david.may.muc@googlemail.com
 
 
 #define DEFAULT_BUF_LENGTH (16 * 16384)
+#define GAIN_SETTLE_TIME 0
 
 typedef struct{
   uint32_t frequency;
@@ -67,6 +68,8 @@ typedef struct{
   uint8_t fib[12][256];
   //uint8_t fib_c[12][32];
   int f_interl_table[2048];
+  int32_t startup_delay;
+  uint8_t force_timesync;
 }dab_state;
 
 

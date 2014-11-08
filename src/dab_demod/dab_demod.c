@@ -25,6 +25,10 @@ david.may.muc@googlemail.com
 int8_t dab_demod(dab_state *dab){
   uint32_t i,j;
   
+
+  /* resetting coarse freqshift */
+  dab->coarse_freq_shift = 0;
+  
   /* write input data into fifo */
   for (i=0;i<dab->input_buffer_len;i++) {
     cbWrite(&(dab->fifo),&dab->input_buffer[i]);
@@ -32,27 +36,43 @@ int8_t dab_demod(dab_state *dab){
 
   /* Check for data in fifo */
   if (dab->fifo.count < 196608*3) {
+    //printf("fifo refill\n");
     return 0;
   }
   
   /* read fifo */
   dab_read_fifo(&(dab->fifo),196608*2,dab->coarse_timeshift+dab->fine_timeshift,dab->buffer);
 
-  /* resetting coarse timeshift */
-  dab->coarse_timeshift = 0;
+
+  
+  /* give the AGC some time to settle */
+  if (dab->startup_delay<=GAIN_SETTLE_TIME) {
+    dab->startup_delay+=1;
+    printf("%i\n",dab->startup_delay);
+    return 0;
+  }
+  
+
 
   /* complex data conversion */
   for (j=0;j<196608*2;j+=2){
     dab->real[j/2]=dab->buffer[j]-127;
     dab->imag[j/2]=dab->buffer[j+1]-127;
   }
+
+  /* resetting coarse timeshift */
+  dab->coarse_timeshift = 0;
+
   /* coarse time sync */
   /* performance bottleneck atm */
-  dab->coarse_timeshift = dab_coarse_time_sync(dab->real,dab->filt);
+  dab->coarse_timeshift = dab_coarse_time_sync(dab->real,dab->filt,dab->force_timesync);
   // we are not in sync so -> next frame
+  dab->force_timesync=0;
   if (dab->coarse_timeshift) {
+    //printf("coarse time shift\n");
     return 0;
   }
+
   /* create complex frame */
   for (j=0;j<196608;j++){
     dab->dab_frame[j][0] = dab->real[j];
@@ -61,8 +81,9 @@ int8_t dab_demod(dab_state *dab){
 
   /* fine time sync */
   dab->fine_timeshift = dab_fine_time_sync(dab->dab_frame);
-
- 
+  if (dab->coarse_freq_shift) {
+    dab->fine_timeshift = 0;
+    }
   /* coarse_frequency shift */
   fftw_plan p;
   p = fftw_plan_dft_1d(2048, &dab->dab_frame[2656+505+dab->fine_timeshift], dab->symbols[0], FFTW_FORWARD, FFTW_ESTIMATE);
@@ -79,6 +100,10 @@ int8_t dab_demod(dab_state *dab){
       dab->symbols[0][i+2048/2][1] = tmp[1];
     }
   dab->coarse_freq_shift = dab_coarse_freq_sync_2(dab->symbols[0]);
+  if (abs(dab->coarse_freq_shift)>1) {
+    dab->force_timesync = 1;
+    return 0;
+  }
 
   /* fine freq correction */
   dab->fine_freq_shift = dab_fine_freq_corr(dab->dab_frame,dab->fine_timeshift);
