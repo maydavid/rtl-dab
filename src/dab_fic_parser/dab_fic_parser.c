@@ -44,7 +44,7 @@ uint8_t dab_fic_parser(uint8_t fibs[12][256],Ensemble *ens){
   for (i=0;i<12;i++){
     /* CRC check */
     j = dab_crc16(fibs[i], 256);
-    //printf("%i",j);
+    //fprintf(stderr,"%i",j);
     dab_bit_to_byte(fibs[i],fib_c[i],256);
     if (j==0) {
       ens->locked = 1;

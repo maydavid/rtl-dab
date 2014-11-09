@@ -111,7 +111,7 @@ int8_t dab_demod(dab_state *dab){
   /* d-qpsk */
   for (i=1;i<76;i++) {
     p = fftw_plan_dft_1d(2048, &dab->dab_frame[2656+(2552*i)+504],
-		       dab->symbols[i], FFTW_FORWARD, FFTW_ESTIMATE);
+			 dab->symbols[i], FFTW_FORWARD, FFTW_ESTIMATE);
     fftw_execute(p);
     for (j = 0; j < 2048/2; j++)
       {
@@ -121,18 +121,18 @@ int8_t dab_demod(dab_state *dab){
 	dab->symbols[i][j][1]    = dab->symbols[i][j+2048/2][1];
 	dab->symbols[i][j+2048/2][0] = tmp[0];
 	dab->symbols[i][j+2048/2][1] = tmp[1];
-    }
+      }
     
   }
-
+  //
   for (j=1;j<75;j++) {
     for (i=0;i<2048;i++)
       {
-	dab->symbols_d[(j-1)*2048+i][0] =
+	dab->symbols_d[j*2048+i][0] =
 	  ((dab->symbols[j][i][0]*dab->symbols[j-1][i][0])
 	   +(dab->symbols[j][i][1]*dab->symbols[j-1][i][1]))
 	  /(dab->symbols[j-1][i][0]*dab->symbols[j-1][i][0]+dab->symbols[j-1][i][1]*dab->symbols[j-1][i][1]);
-	dab->symbols_d[(j-1)*2048+i][1] = 
+	dab->symbols_d[j*2048+i][1] = 
 	  ((dab->symbols[j][i][0]*dab->symbols[j-1][i][1])
 	   -(dab->symbols[j][i][1]*dab->symbols[j-1][i][0]))
 	  /(dab->symbols[j-1][i][0]*dab->symbols[j-1][i][0]+dab->symbols[j-1][i][1]*dab->symbols[j-1][i][1]);
@@ -140,7 +140,7 @@ int8_t dab_demod(dab_state *dab){
   }
   
   int32_t k=0;
-  for (j=0;j<75;j++) {
+  for (j=1;j<75;j++) {
     for (i=0;i<2048;i++){
       if ((i>255) && i!=1024 && i < 1793) {
 	dab->symbols_dc[j*1536+k][0] = dab->symbols_d[j*2048+i][0];
@@ -152,7 +152,7 @@ int8_t dab_demod(dab_state *dab){
   }
   
   /* frequency deinterleaving */
-  for (i=0;i<75;i++){
+  for (i=1;i<75;i++){
     for (j=0;j<1536;j++) {
       
       k=dab->f_interl_table[j];
@@ -168,27 +168,27 @@ int8_t dab_demod(dab_state *dab){
   }
   
   /* demapping */
-  for (i=0;i<75;i++){
+  for (i=1;i<75;i++){
     for (j=0;j<1536*2;j++){
       if (j<1536){
-	dab->symbols_demapped[i][j] = (dab->symbols_dc_fd[(i*1536)+j][0]>0) ? 0:1;
+	dab->symbols_demapped[i][j] =(dab->symbols_dc_fd[(i*1536)+j][0]>0)?0:1;
       }
       else if (j>=1536) {
-	dab->symbols_demapped[i][j] = (dab->symbols_dc_fd[(i*1536)+(j-1536)][1] > 0) ? 1:0;
+	dab->symbols_demapped[i][j] =(dab->symbols_dc_fd[(i*1536)+(j-1536)][1] > 0) ? 1:0;
       }
     }
   }
   
   /* block partitioning */
-  for (i=0;i<1536*2;i++){
-          dab->FIC[i+3072*0] = dab->symbols_demapped[0][i];
-          dab->FIC[i+3072*1] = dab->symbols_demapped[1][i];
-          dab->FIC[i+3072*2] = dab->symbols_demapped[2][i];
-  }
   
- 
+  for (i=0;i<1536*2;i++){
+    dab->FIC[i+3072*0] = dab->symbols_demapped[1][i];
+    dab->FIC[i+3072*1] = dab->symbols_demapped[2][i];
+    dab->FIC[i+3072*2] = dab->symbols_demapped[3][i];
+  }
+
   /* FIC depuncture */
-  dab_fic_depuncture(&dab->FIC[0],&dab->FIC_dep[0]);
+  dab_fic_depuncture(&dab->FIC[2304*0],&dab->FIC_dep[3096*0]);
   dab_fic_depuncture(&dab->FIC[2304*1],&dab->FIC_dep[3096*1]);
   dab_fic_depuncture(&dab->FIC[2304*2],&dab->FIC_dep[3096*2]);
   dab_fic_depuncture(&dab->FIC[2304*3],&dab->FIC_dep[3096*3]);
@@ -202,10 +202,10 @@ int8_t dab_demod(dab_state *dab){
   
 
   /*De-scramble */
-  dab_fic_descramble( &dab->FIC_dep_dec[768*0],  &dab->FIC_dep_dec_scr[768*0], 768);
-  dab_fic_descramble( &dab->FIC_dep_dec[768*1],  &dab->FIC_dep_dec_scr[768*1], 768);
-  dab_fic_descramble( &dab->FIC_dep_dec[768*2],  &dab->FIC_dep_dec_scr[768*2], 768);
-  dab_fic_descramble( &dab->FIC_dep_dec[768*3],  &dab->FIC_dep_dec_scr[768*3], 768);
+  dab_fic_descramble(&dab->FIC_dep_dec[768*0],&dab->FIC_dep_dec_scr[768*0],768);
+  dab_fic_descramble(&dab->FIC_dep_dec[768*1],&dab->FIC_dep_dec_scr[768*1],768);
+  dab_fic_descramble(&dab->FIC_dep_dec[768*2],&dab->FIC_dep_dec_scr[768*2],768);
+  dab_fic_descramble(&dab->FIC_dep_dec[768*3],&dab->FIC_dep_dec_scr[768*3],768);
   
 
   /* FIC -> FIB */

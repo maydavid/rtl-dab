@@ -91,7 +91,7 @@ struct ServiceList * appendService(struct ServiceList *sl,uint8_t *fig,uint32_t 
   }
   new->next = sl;
   if (new->NumberOfSCs > 1)
-    fprintf(stderr,"%s: TODO: implement multiple SCs per service!",__FUNCTION__);
+    fprintf(stderr,"%s: TODO: implement multiple SCs per service!\n",__FUNCTION__);
   new->scp->TMId = fig[idx] >> 6;
   if (new->scp->TMId == 0){
     new->scp->ASCTy = fig[idx] & 0x3F;

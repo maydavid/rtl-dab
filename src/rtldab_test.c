@@ -45,7 +45,7 @@ int main(void){
   
   // open static file
   FILE *fh;
-  fh = fopen("222055_dump.dump","r");
+  fh = fopen("/home/david/projects/rtl-dab/222055_dump.dump","r");
 
   // init demodulator structure
   dab_demod_init(&dab);

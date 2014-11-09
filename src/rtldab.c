@@ -42,6 +42,8 @@ Ensemble sinfo;
 
 
 void print_status(dab_state *dab) {
+  fprintf(stderr,"RECEIVER STATUS:                                 \n");
+  fprintf(stderr,"-------------------------------------------------\n");
   fprintf(stderr,"cts : %i\n",dab->coarse_timeshift);
   fprintf(stderr,"fts : %i\n",dab->fine_timeshift);
   fprintf(stderr,"cfs : %i\n",dab->coarse_freq_shift);
@@ -89,9 +91,9 @@ static void *demod_thread_fn(void *arg)
     dab_fic_parser(dab->fib,&sinfo);
     if (abs(dab->coarse_freq_shift)>1) {
       if (dab->coarse_freq_shift<0)
-	dab->frequency = dab->frequency -1000;//+ 1000*dab->coarse_freq_shift;
+	dab->frequency = dab->frequency -1000;
       else
-	dab->frequency = dab->frequency +1000;//- 1000*dab->coarse_freq_shift;
+	dab->frequency = dab->frequency +1000;
       
       rtlsdr_set_center_freq(dev,dab->frequency);
       
@@ -100,9 +102,9 @@ static void *demod_thread_fn(void *arg)
     if (abs(dab->coarse_freq_shift) ==1) {
       
       if (dab->coarse_freq_shift<0)
-	dab->frequency = dab->frequency -rand() % 1000;//+ 1000*dab->coarse_freq_shift;
+	dab->frequency = dab->frequency -rand() % 1000;
       else
-	dab->frequency = dab->frequency +rand() % 1000;//- 1000*dab->coarse_freq_shift;
+	dab->frequency = dab->frequency +rand() % 1000;
       
       rtlsdr_set_center_freq(dev,dab->frequency);
       //fprintf(stderr,"new center freq : %i\n",rtlsdr_get_center_freq(dev));
@@ -154,8 +156,8 @@ int main (int argc, char **argv)
 
   int gain = AUTO_GAIN;
   dab_state dab;
-  dab.frequency = 222064000;
-  //229072000;//178352000;//220352000;//222064000-9000;//178352000-6000;
+  dab.frequency = 220352000;
+  //222064000;
 
   fprintf(stderr,"\n");
   fprintf(stderr,"rtldab %s \n",VERSION);
