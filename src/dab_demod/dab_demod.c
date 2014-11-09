@@ -109,7 +109,7 @@ int8_t dab_demod(dab_state *dab){
   dab->fine_freq_shift = dab_fine_freq_corr(dab->dab_frame,dab->fine_timeshift);
 
   /* d-qpsk */
-  for (i=1;i<76;i++) {
+  for (i=0;i<76;i++) {
     p = fftw_plan_dft_1d(2048, &dab->dab_frame[2656+(2552*i)+504],
 			 dab->symbols[i], FFTW_FORWARD, FFTW_ESTIMATE);
     fftw_execute(p);
