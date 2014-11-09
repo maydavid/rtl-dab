@@ -25,5 +25,5 @@ Features:
 
 #### 09/11/2014
 
-* Synchronization issues are fixed now. Syncing and tuning is working surprisingly well. There is still an issue with the first data symbol which is used for the FIC. The CRC of the first 4 FIGs is always wrong. Sounds like a simple mapping issue, however I was not able to find the problem.
+* Synchronization issues are fixed now. Syncing and tuning is working surprisingly well. ~~There is still an issue with the first data symbol which is used for the FIC. The CRC of the first 4 FIGs is always wrong. Sounds like a simple mapping issue, however I was not able to find the problem.~~
 
