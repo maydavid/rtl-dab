@@ -23,7 +23,7 @@ david.may.muc@googlemail.com
 
 struct BasicSubchannelOrganization *  appendSubchannel(struct BasicSubchannelOrganization *lst,
 						       uint8_t * fig,uint8_t SubChId){
-
+  
   struct BasicSubchannelOrganization *temp1;
   temp1 = lst;
   while(temp1->next!=NULL) {
@@ -31,8 +31,9 @@ struct BasicSubchannelOrganization *  appendSubchannel(struct BasicSubchannelOrg
       return lst;
     temp1 = temp1->next;
   }
-
   
+  
+
   struct BasicSubchannelOrganization *temp;
   temp = malloc(sizeof(struct BasicSubchannelOrganization));
   temp->SubChId = SubChId;
@@ -56,6 +57,49 @@ struct BasicSubchannelOrganization *  appendSubchannel(struct BasicSubchannelOrg
  }
 
 
+struct ServiceComponents *appendServiceComponent(struct ServiceComponents* list,uint8_t * fig,int idx) {
+ 
+  
+  struct ServiceComponents * temp_ptr;
+  temp_ptr = malloc(sizeof(struct ServiceComponents));
+  temp_ptr->TMId = fig[idx] >> 6;
+  if (temp_ptr->TMId == 0){
+    temp_ptr->ASCTy = fig[idx] & 0x3F;
+    temp_ptr->SubChId = fig[idx+1] >> 2;
+    temp_ptr->PS = (fig[idx+1] >> 1) & 0x01;
+    temp_ptr->CAFlag = fig[idx+1] & 0x01;
+    temp_ptr->DSCTy = 0;
+    temp_ptr->SCId = 0;
+  }
+  if (temp_ptr->TMId == 1){
+    temp_ptr->DSCTy = fig[idx] & 0x3F;
+    temp_ptr->SubChId = fig[idx+1] >> 2;
+    temp_ptr->PS = (fig[idx+1] >> 1) & 0x01;
+    temp_ptr->CAFlag = fig[idx+1] & 0x01;
+    temp_ptr->ASCTy = 0;
+    temp_ptr->SCId = 0;
+  }
+  if (temp_ptr->TMId == 2){
+    temp_ptr->DSCTy = fig[idx] & 0x3F;
+    temp_ptr->FIDCId = fig[idx+1] >> 2;
+    temp_ptr->PS = (fig[idx+1] >> 1) & 0x01;
+    temp_ptr->CAFlag = fig[idx+1] & 0x01;
+    temp_ptr->ASCTy = 0;
+    temp_ptr->SCId = 0;
+    }
+  if (temp_ptr->TMId == 3){
+    temp_ptr->SCId = ((uint16_t)(fig[idx] & 0x3F) << 6) + (fig[idx+1] >> 2);
+    temp_ptr->PS = (fig[idx+1] >> 1) & 0x01;
+    temp_ptr->CAFlag = fig[idx+1] & 0x01;
+    temp_ptr->DSCTy = 0;
+    temp_ptr->ASCTy = 0;
+    temp_ptr->SubChId = 0; 
+  }
+  temp_ptr->next = list;
+  return temp_ptr;
+  
+}
+
 struct ServiceList * appendService(struct ServiceList *sl,uint8_t *fig,uint32_t sr,uint8_t pd){
   struct ServiceList * list;
   list = sl;
@@ -63,12 +107,11 @@ struct ServiceList * appendService(struct ServiceList *sl,uint8_t *fig,uint32_t 
     if (list->ServiceReference == sr)
       return sl;   
     list = list->next;     
-
+    
   }
-
+  
   struct ServiceList *new;
   new = malloc(sizeof(struct ServiceList));
-  new->scp = malloc(sizeof(struct ServiceComponents));
   new->ServiceReference = sr;
   int idx;
   if (pd) {
@@ -90,57 +133,17 @@ struct ServiceList * appendService(struct ServiceList *sl,uint8_t *fig,uint32_t 
     idx = 3;
   }
   new->next = sl;
-  if (new->NumberOfSCs > 1)
-    fprintf(stderr,"%s: TODO: implement multiple SCs per service!\n",__FUNCTION__);
-  new->scp->TMId = fig[idx] >> 6;
-  if (new->scp->TMId == 0){
-    new->scp->ASCTy = fig[idx] & 0x3F;
-    new->scp->SubChId = fig[idx+1] >> 2;
-    new->scp->PS = (fig[idx+1] >> 1) & 0x01;
-    new->scp->CAFlag = fig[idx+1] & 0x01;
-    new->scp->DSCTy = 0;
-    new->scp->SCId = 0;
+  
+  
+  //if (new->NumberOfSCs > 1)
+  //  fprintf(stderr,"%s: TODO: implement multiple SCs per service!\n",__FUNCTION__);
+  int sc_i;
+  new->scp = NULL;
+  for (sc_i = 0;sc_i<new->NumberOfSCs;sc_i++) {
+    new->scp = appendServiceComponent(new->scp,fig,idx);
+    idx += 2;
   }
-  if (new->scp->TMId == 1){
-    new->scp->DSCTy = fig[idx] & 0x3F;
-    new->scp->SubChId = fig[idx+1] >> 2;
-    new->scp->PS = (fig[idx+1] >> 1) & 0x01;
-    new->scp->CAFlag = fig[idx+1] & 0x01;
-    new->scp->ASCTy = 0;
-    new->scp->SCId = 0;
-  }
-  if (new->scp->TMId == 2){
-    new->scp->DSCTy = fig[idx] & 0x3F;
-    new->scp->FIDCId = fig[idx+1] >> 2;
-    new->scp->PS = (fig[idx+1] >> 1) & 0x01;
-    new->scp->CAFlag = fig[idx+1] & 0x01;
-    new->scp->ASCTy = 0;
-    new->scp->SCId = 0;
-  }
-  if (new->scp->TMId == 3){
-    new->scp->SCId = ((uint16_t)(fig[idx] & 0x3F) << 6) + (fig[idx+1] >> 2);
-    new->scp->PS = (fig[idx+1] >> 1) & 0x01;
-    new->scp->CAFlag = fig[idx+1] & 0x01;
-    new->scp->DSCTy = 0;
-    new->scp->ASCTy = 0;
-    new->scp->SubChId = 0;
-    
-  }
-  /* debug print */
-  if (0) {
-  struct ServiceList *r;
-  r = sl;
-  fprintf(stderr,"ServiceList:              \n");
-  while (r->next != NULL) {
-    fprintf(stderr,"sr: %5u ecc: %2X cid: %2u lf: %1u caid:%2u nscs: %2u \n",
-	    r->ServiceReference,
-	    r->ECC,r->CountryId,
-	    r->localFlag,r->CAId,r->NumberOfSCs);
-    fprintf(stderr,"SCPs: ASCTy:%u,DSCTy:%u,SubChId:%u,SCId:%u\n",
-	    r->scp->ASCTy,r->scp->DSCTy,r->scp->SubChId,r->scp->SCId);
-    r = r->next;
-  }
-  }
+  
   
   return new;
 
@@ -156,8 +159,10 @@ uint8_t dab_fig_type_0(uint8_t * fig,Ensemble * ens, uint32_t length){
   /* Basic sub-channel organization */
   uint32_t idx=1;
   if (extension == 0){
+    //fprintf(stderr,"FIG 0/%u\n",extension);
+	
   }
-  if (extension == 1){
+  else if (extension == 1){
     while (idx<(length-1)){
       ens->sco = appendSubchannel(ens->sco,&fig[idx],fig[idx]>>2);	
       if (fig[idx+2] >> 7)
@@ -167,7 +172,7 @@ uint8_t dab_fig_type_0(uint8_t * fig,Ensemble * ens, uint32_t length){
       //fprintf(stderr,"%u %u %u\n",idx,length-1,fig[idx]>>2);
     }
   }
-  if (extension == 2) {
+  else if (extension == 2) {
     //fprintf(stderr,"P/D %u \n",(fig[0] >> 5) & 0x01);
     uint32_t sr=0;
     while (idx<length) {
@@ -186,8 +191,10 @@ uint8_t dab_fig_type_0(uint8_t * fig,Ensemble * ens, uint32_t length){
     }
   }
   /* Service Component in Packet Mode */
-  if (extension == 3) {
-    /* while(idx < length) {
+  else if (extension == 3) {
+    //fprintf(stderr,"FIG 0/%u\n",extension);
+    /*
+     while(idx < length) {
     fprintf(stderr,"%u %u\n",((uint16_t)fig[idx] << 4) + (fig[idx+1] >> 4),fig[idx+4] >> 2);
     fprintf(stderr,"%INFO: %X %X %X %X\n",fig[idx],fig[idx+1],fig[idx+2],fig[idx+3]);
     // if not DG flag... 
@@ -195,16 +202,26 @@ uint8_t dab_fig_type_0(uint8_t * fig,Ensemble * ens, uint32_t length){
     }
     */
   }
-  if (extension == 4) {
-    fprintf(stderr,"SCs with CA\n");
-
+  else if (extension == 4) {
+    //fprintf(stderr,"FIG 0/%u\n",extension);	
+    //fprintf(stderr,"SCs with CA\n");
+	
   }
+  /* Service Component Language */
+  else if (extension == 5) {
+    //fprintf(stderr,"FIG 0/%u\n",extension);
+    
+  }
+
   /* Service Linking Info */
-  if (extension == 6) {
-
+  else if (extension == 6) {
+    //fprintf(stderr,"FIG 0/%u\n",extension);
+    
   }
 
-  if (extension == 8) {
+  else if (extension == 8) {
+    //fprintf(stderr,"FIG 0/%u\n",extension);
+
     //fprintf(stderr,"%X %X %X %X\n",fig[1],fig[2],fig[3],fig[4]);
     /*
     uint32_t sr=0;
@@ -224,12 +241,28 @@ uint8_t dab_fig_type_0(uint8_t * fig,Ensemble * ens, uint32_t length){
     fprintf(stderr,"%X %u \n",sr,sc);
     */
   }
+
+  /* Country LTO */
+  else if (extension == 9) {
+  }
+
+  /* Date & Time */
+  else if (extension == 10) {
+  }
+
+  /* Region Definition */
+  else if (extension == 11) {
+  }
+
   /* User Application Information */
-  if (extension == 13) {
-  
+  else if (extension == 13) {
+    //fprintf(stderr,"FIG 0/%u\n",extension);
+
   }
   /* FEC Subchannel Organization */
-  if (extension == 14) {
+  else if (extension == 14) {
+    //fprintf(stderr,"FIG 0/%u\n",extension);
+    
     //fprintf(stderr,"FEC Subchannel Organization\n");
     /*
     while(idx < length) {
@@ -239,14 +272,27 @@ uint8_t dab_fig_type_0(uint8_t * fig,Ensemble * ens, uint32_t length){
     */
   }
   /* Program Type PTy */
-  if (extension == 17) {
-
+  else if (extension == 17) {
+    //fprintf(stderr,"FIG 0/%u\n",extension);
+    
   }
 
   /* Anouncment */
-  if (extension == 18) {
+  else if (extension == 18) {
+    //fprintf(stderr,"FIG 0/%u\n",extension);
+  }
+  /* DRM Freqs */
+  else if (extension == 21) {
+  }
 
+  /* TII */
+  else if (extension == 22) {
+  }
 
+  
+  else {
+    fprintf(stderr,"FIG 0/%u\n",extension);
+    
   }
   return 0;
 }

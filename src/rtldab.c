@@ -61,18 +61,23 @@ void print_status(dab_state *dab) {
     sco = sco->next;
   }
   struct ServiceList *sl;
+  struct ServiceComponents *scp;
   sl = sinfo.sl;
   while (sl->next != NULL) {
-    fprintf(stderr,"SId: %8X | SubChId: %2u | SCId %u\n",sl->SId,sl->scp->SubChId,sl->scp->SCId);
+    scp = sl->scp;
+    while (scp != NULL) {
+      fprintf(stderr,"TMId: %i | SId: %8X | SubChId: %2u | SCId %u | ASCTy %X\n",scp->TMId,sl->SId,scp->SubChId,scp->SCId,scp->ASCTy);
+      scp = scp->next;
+    }
     sl = sl->next;
   }
- struct ProgrammeServiceLabel *psl;
- psl = sinfo.psl;
- while (psl->next != NULL) {
-   fprintf(stderr,"SId: %8X | Label: %s \n",psl->SId,psl->label);
-   psl = psl->next;
- }
- 
+  struct ProgrammeServiceLabel *psl;
+  psl = sinfo.psl;
+  while (psl->next != NULL) {
+    fprintf(stderr,"SId: %8X | Label: %s \n",psl->SId,psl->label);
+    psl = psl->next;
+  }
+  
 }
 
 static void sighandler(int signum)

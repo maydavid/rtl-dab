@@ -58,19 +58,38 @@ uint8_t dab_fig_type_1(uint8_t * fig,Ensemble * sinfo){
     sinfo->esl->label[16] = '\0';
     sinfo->esl->chFlag = ((uint16_t)fig[4]<<8) + fig[5];
   }
-  if (extension == 1) {
+  else if (extension == 1) {
     sinfo->psl = appendServiceLabel(sinfo->psl,((uint16_t)fig[1]<<8) + fig[2],&fig[3],
 		       ((uint16_t)fig[4]<<8) + fig[5]);
     
   }
   /* FIG 1/3 region Label */
-  if (extension == 3) {
+  else if (extension == 3) {
     //++fig;
+    //fprintf(stderr,"FIG 1/3\n");
     //fprintf(stderr,"%s\n",++fig);
   }
-  if (extension == 5) {
-    //fprintf(stderr,"FIG 1/5\n");
+
+  else if (extension == 4) {
+    fprintf(stderr,"FIG 1/4\n");
+    //fprintf(stderr,"%s\n",++fig);
+
+  }
+
+  else  if (extension == 5) {
+    fprintf(stderr,"FIG 1/5\n");
     //fprintf(stderr,"%u\n",(uint32_t)fig);
   }
+
+
+  else if (extension == 6) {
+    fprintf(stderr,"FIG 1/4\n");
+    //fprintf(stderr,"%s\n",++fig);
+
+  }
+  else {
+    fprintf(stderr,"FIG 1/%u\n",extension);
+  }
+
   return 0;
 }
