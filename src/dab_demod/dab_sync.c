@@ -198,33 +198,6 @@ int32_t dab_fine_time_sync(fftw_complex * frame){
   //return 0;
 }
 
-/* adapted from gr-dab (c) Andreas Müller*/
-int32_t dab_coarse_freq_sync(fftw_complex * symbols){
-  uint32_t i, index;
-  double sum=0, max=0;
-  uint32_t d_num_carriers = 1536;
-  uint32_t d_fft_length = 2048;
-  
-
-  for (i=0; i<d_num_carriers+1; i++) {
-    if (i != d_num_carriers/2)
-      sum+=(double)mag_squared(symbols[i]);
-  }
-  max = sum;
-  index = 0;
-  for (i=1; i<d_fft_length-d_num_carriers; i++) {
-    sum -= (double)mag_squared(symbols[i-1]);
-    sum += (double)mag_squared(symbols[i+d_num_carriers/2-1]);
-    sum -= (double)mag_squared(symbols[i+d_num_carriers/2]);
-    sum += (double)mag_squared(symbols[i+d_num_carriers]);
-    if (sum > max) {
-      max = sum;
-      index = i;
-    }
-  }
-
-  return (int32_t)(index+(d_num_carriers/2)-(d_fft_length/2));
-}
 
 int32_t dab_coarse_freq_sync_2(fftw_complex * symbols){
   uint32_t len = 128;
