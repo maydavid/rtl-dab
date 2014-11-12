@@ -15,7 +15,10 @@ typedef struct{
   uint32_t received_fibs;
   uint32_t faulty_fibs;
   float ber;
-
+  float mean_ber;
+  uint32_t num_ber_calc;
+  float sum_ber;
+  
 }Analyzer;
 
 

@@ -119,7 +119,7 @@ int main(void){
   fprintf(stderr,"received fibs: %i\n",ana.received_fibs);
   fprintf(stderr,"faulty   fibs: %i\n",ana.faulty_fibs);
   fprintf(stderr,"faulty fib rate: %f\n",(float)ana.faulty_fibs/(float)ana.received_fibs);
-  fprintf(stderr,"ber: %f\n",ana.ber);
+  fprintf(stderr,"mean channel ber: %f\n",ana.mean_ber);
 
 
   return 1;

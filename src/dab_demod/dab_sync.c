@@ -55,7 +55,7 @@ uint32_t dab_coarse_time_sync(int8_t * real, float * filt, uint8_t force_timesyn
 
   // finding the minimum in filtered data gives position of null symbol
   float minVal=9999999;
-  uint32_t minPos;
+  uint32_t minPos=0;
   for (j=0;j<(196608-tnull)/10;j++){
     if (filt[j]<minVal) {
       minVal = filt[j];
@@ -200,13 +200,13 @@ int32_t dab_fine_time_sync(fftw_complex * frame){
 
 
 int32_t dab_coarse_freq_sync_2(fftw_complex * symbols){
-  uint32_t len = 128;
+  int len = 128;
   fftw_complex convoluted_prs[len];
   int s;
   int freq_hub = 14; // + and - center freq
   int k;
   float global_max = -99999;
-  int global_max_pos; 
+  int global_max_pos=0; 
   for (k=-freq_hub;k<=freq_hub;k++) {
     
     for (s=0;s<len;s++) {

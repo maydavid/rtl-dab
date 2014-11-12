@@ -4,6 +4,9 @@ void dab_analyzer_init(Analyzer * ana) {
   ana->received_fibs = 0;
   ana->faulty_fibs = 0;
   ana->ber = 0;
+  ana->mean_ber = 0;
+  ana->num_ber_calc = 0;
+  ana->sum_ber = 0;
 }
 
 
@@ -42,6 +45,10 @@ int dab_analyzer_calculate_error_rates(Analyzer *ana,dab_state *dab) {
   //printf("%i\n",s);
   // channel ber
   ana->ber = (float)s/(float)(1536*2*3);
+
+  ana->sum_ber += ana->ber;
+  ana->num_ber_calc += 1;
+  ana->mean_ber = ana->sum_ber/(float)ana->num_ber_calc;
 
 
   /* MER */
