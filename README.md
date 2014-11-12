@@ -4,7 +4,8 @@ DAB/DAB+ receiver to use with rtl-sdr sticks
 
 Features:
 * FIC decoding
-* Only Mode I supported.
+* Simple BER Analysis (more to come)
+* Mode I supported
 
 ### This project uses snippets from:
 
@@ -27,3 +28,14 @@ Features:
 
 * Synchronization issues are fixed now. Syncing and tuning is working surprisingly well. ~~There is still an issue with the first data symbol which is used for the FIC. The CRC of the first 4 FIGs is always wrong. Sounds like a simple mapping issue, however I was not able to find the problem.~~
 
+
+
+### usage:
+
+ ```
+ $ git clone git@github.com:maydavid/rtl-dab.git
+ $ cd rtl-dab
+ $ cmake .
+ $ src/rtl_dab <frequency in Hz>
+ ```
+ 
