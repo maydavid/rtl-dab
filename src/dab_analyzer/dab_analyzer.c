@@ -42,6 +42,12 @@ int dab_analyzer_calculate_error_rates(Analyzer *ana,dab_state *dab) {
   //printf("%i\n",s);
   // channel ber
   ana->ber = (float)s/(float)(1536*2*3);
+
+
+  /* MER */
+  
+
+
   return 1;
 }
 

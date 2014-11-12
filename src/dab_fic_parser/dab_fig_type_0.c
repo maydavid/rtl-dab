@@ -281,6 +281,12 @@ uint8_t dab_fig_type_0(uint8_t * fig,Ensemble * ens, uint32_t length){
   else if (extension == 18) {
     //fprintf(stderr,"FIG 0/%u\n",extension);
   }
+
+  /* Anouncment Switching */
+  else if (extension == 19) {
+    //fprintf(stderr,"FIG 0/%u\n",extension);
+  }
+
   /* DRM Freqs */
   else if (extension == 21) {
   }
@@ -289,7 +295,9 @@ uint8_t dab_fig_type_0(uint8_t * fig,Ensemble * ens, uint32_t length){
   else if (extension == 22) {
   }
 
-  
+  /* OE Services */
+  else if (extension == 24) {
+  }
   else {
     fprintf(stderr,"FIG 0/%u\n",extension);
     

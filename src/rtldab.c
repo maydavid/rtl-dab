@@ -173,8 +173,13 @@ int main (int argc, char **argv)
 
   int gain = AUTO_GAIN;
   dab_state dab;
-  dab.frequency = 220352000;
-  //222064000;
+
+  if (argc > 1) {
+    dab.frequency = atoi(argv[1]);
+  } else {
+    dab.frequency = 220352000;
+  }
+  //fprintf(stderr,"%i\n",dab.frequency);
 
   fprintf(stderr,"\n");
   fprintf(stderr,"rtldab %s \n",VERSION);

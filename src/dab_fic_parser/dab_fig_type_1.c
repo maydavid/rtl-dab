@@ -63,6 +63,10 @@ uint8_t dab_fig_type_1(uint8_t * fig,Ensemble * sinfo){
 		       ((uint16_t)fig[4]<<8) + fig[5]);
     
   }
+
+  /* Programm type downloading (not used anymore?!) */
+  else if (extension == 2) {
+  }
   /* FIG 1/3 region Label */
   else if (extension == 3) {
     //++fig;
