@@ -11,7 +11,7 @@ int dab_analyzer_calculate_error_rates(Analyzer *ana,dab_state *dab) {
 
   //conv enc
   dab_bit_to_byte(&dab->FIC_dep_dec[0],&dab->FIC_dep_dec_byte[0],(768*4));
-  // just one atm
+
   encode(&dab->FIC_dep_enc[0*3096],&dab->FIC_dep_dec_byte[0*768/8],768/8,0,0);
   encode(&dab->FIC_dep_enc[1*3096],&dab->FIC_dep_dec_byte[1*768/8],768/8,0,0);
   encode(&dab->FIC_dep_enc[2*3096],&dab->FIC_dep_dec_byte[2*768/8],768/8,0,0);
