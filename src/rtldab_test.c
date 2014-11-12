@@ -29,6 +29,7 @@ david.may.muc@googlemail.com
 
 #include "dab_demod.h"
 #include "dab_fic_parser.h"
+#include "dab_analyzer.h"
 
 
 
@@ -37,6 +38,7 @@ int corr_counter;
 
 //ServiceInformation sinfo;
 Ensemble sinfo;
+Analyzer ana;
 
 int main(void){
   int i;
@@ -53,6 +55,9 @@ int main(void){
   // init FIC parser 
   dab_fic_parser_init(&sinfo);
 
+  // init DAB Analyzer
+  dab_analyzer_init(&ana);
+
   // fill buffer and let the autogain settle
   for (i=0;i<20;i++) {
   fread(dab.input_buffer,1,16*16384,fh);
@@ -67,7 +72,10 @@ int main(void){
     dab_demod(&dab);
     
     // parse FIC
-    dab_fic_parser(dab.fib,&sinfo);
+    dab_fic_parser(dab.fib,&sinfo,&ana);
+
+    // calculate error rates
+    dab_analyzer_calculate_error_rates(&ana,&dab);
 
     //  correct frequency shift
     if (abs(dab.fine_freq_shift) > 20 || abs(dab.coarse_freq_shift) > 1) {
@@ -105,6 +113,14 @@ int main(void){
     fprintf(stderr,"SId: %8X | Label: %s \n",psl->SId,psl->label);
     psl = psl->next;
   }
-  
+
+
+  fprintf(stderr,"Analyzer: \n");
+  fprintf(stderr,"received fibs: %i\n",ana.received_fibs);
+  fprintf(stderr,"faulty   fibs: %i\n",ana.faulty_fibs);
+  fprintf(stderr,"faulty fib rate: %f\n",(float)ana.faulty_fibs/(float)ana.received_fibs);
+  fprintf(stderr,"ber: %f\n",ana.ber);
+
+
   return 1;
 }

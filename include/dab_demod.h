@@ -19,6 +19,7 @@ david.may.muc@googlemail.com
 
 */
 
+#pragma once
 
 #include <stdint.h>
 #include <fftw3.h>
@@ -64,6 +65,11 @@ typedef struct{
   uint8_t FIC[1536*2*3];
   uint8_t FIC_dep[3096*4];
   uint8_t FIC_dep_dec[768*4];
+  uint8_t FIC_dep_dec_byte[(768*4)/8];
+
+  uint8_t FIC_dep_enc[3096*4];  
+  uint8_t FIC_enc_pun[1536*2*3];  
+
   uint8_t FIC_dep_dec_scr[768*4];
   uint8_t fib[12][256];
   //uint8_t fib_c[12][32];

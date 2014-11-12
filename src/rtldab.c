@@ -40,6 +40,8 @@ uint32_t ccount=0;
 //ServiceInformation sinfo;
 Ensemble sinfo;
 
+// Analyzer 
+Analyzer ana;
 
 void print_status(dab_state *dab) {
   fprintf(stderr,"RECEIVER STATUS:                                 \n");
@@ -77,6 +79,13 @@ void print_status(dab_state *dab) {
     fprintf(stderr,"SId: %8X | Label: %s \n",psl->SId,psl->label);
     psl = psl->next;
   }
+
+
+  fprintf(stderr,"Analyzer: \n");
+  fprintf(stderr,"received fibs: %i\n",ana.received_fibs);
+  fprintf(stderr,"faulty   fibs: %i\n",ana.faulty_fibs);
+  fprintf(stderr,"faulty fib rate: %f\n",(float)ana.faulty_fibs/(float)ana.received_fibs);
+  fprintf(stderr,"ber: %f\n",ana.ber);
   
 }
 
@@ -93,7 +102,10 @@ static void *demod_thread_fn(void *arg)
   while (!do_exit) {
     sem_wait(&data_ready);
     dab_demod(dab);
-    dab_fic_parser(dab->fib,&sinfo);
+    dab_fic_parser(dab->fib,&sinfo,&ana);
+    // calculate error rates
+    dab_analyzer_calculate_error_rates(&ana,dab);
+
     if (abs(dab->coarse_freq_shift)>1) {
       if (dab->coarse_freq_shift<0)
 	dab->frequency = dab->frequency -1000;
@@ -125,7 +137,7 @@ static void *demod_thread_fn(void *arg)
   
     
     ccount += 1;
-    if (ccount == 100) {
+    if (ccount == 10) {
       ccount = 0;
       print_status(dab);
     }
@@ -258,7 +270,7 @@ int main (int argc, char **argv)
   -----------------------------------------------*/
   dab_demod_init(&dab);
   dab_fic_parser_init(&sinfo);
-
+  dab_analyzer_init(&ana);
   pthread_create(&demod_thread, NULL, demod_thread_fn, (void *)(&dab));
   rtlsdr_read_async(dev, rtlsdr_callback, (void *)(&dab),
 			      DEFAULT_ASYNC_BUF_NUMBER, DEFAULT_BUF_LENGTH);

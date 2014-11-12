@@ -4,7 +4,7 @@
 #include <string.h>
 
 #include "dab_helper_functions.h"
-
+#include "dab_analyzer.h"
 typedef struct{
   
   uint8_t locked;
@@ -74,7 +74,7 @@ struct EnsembleLabel {
   uint16_t chFlag;
 };
 
-uint8_t dab_fic_parser(uint8_t fibs[12][256],Ensemble * ens);
+uint8_t dab_fic_parser(uint8_t fibs[12][256],Ensemble * ens,Analyzer *ana);
 void dab_fic_parser_init(Ensemble *ens);
 
 uint8_t dab_fig_type_1(uint8_t * fig,Ensemble * ens);

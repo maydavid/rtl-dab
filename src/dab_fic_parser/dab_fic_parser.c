@@ -32,20 +32,23 @@ void dab_fic_parser_init(Ensemble * ens) {
   ens->sco->next = NULL;
   ens->psl = malloc(sizeof(struct ProgrammeServiceLabel));
   ens->psl->next = NULL;
-  //sinfo->ensinfo = malloc(sizeof(struct EnsembleInformation));
 }
 
-uint8_t dab_fic_parser(uint8_t fibs[12][256],Ensemble *ens){
+uint8_t dab_fic_parser(uint8_t fibs[12][256],Ensemble *ens,Analyzer *ana){
   int32_t i,j;
   uint8_t fib_c[12][32];
   uint8_t type=0,length=0,shift=0;
   uint8_t charEnc;
+  uint16_t faulty_fibs=0;
 
   for (i=0;i<12;i++){
     /* CRC check */
     j = dab_crc16(fibs[i], 256);
     //fprintf(stderr,"%i",j);
     dab_bit_to_byte(fibs[i],fib_c[i],256);
+    if (ens->locked) {
+      ana->received_fibs +=1;
+    }
     if (j==0) {
       ens->locked = 1;
       type = 0;
@@ -87,10 +90,16 @@ uint8_t dab_fic_parser(uint8_t fibs[12][256],Ensemble *ens){
 	  }
 	shift = shift+length+1;
       }
+    } else {
+      ana->faulty_fibs += 1;
+      faulty_fibs += 1;
     }
   }
   
-
+  if (faulty_fibs == 12) {
+    ens->locked = 0;
+    dab_analyzer_init(ana);
+  }
   return 1;
 
 }
