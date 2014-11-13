@@ -59,10 +59,12 @@ int main(int argc, char **argv){
   dab_analyzer_init(&ana);
 
 
-  if (argc >2) {
-    dab.p_e_prior_vitdec = atof(argv[1]);
-    dab.p_e_after_vitdec = atof(argv[2]);
+  if (argc >3) {
+    dab.p_e_prior_dep = atof(argv[1]);
+    dab.p_e_prior_vitdec = atof(argv[2]);
+    dab.p_e_after_vitdec = atof(argv[3]);
   } else {
+    dab.p_e_prior_dep = 0.0;
     dab.p_e_prior_vitdec = 0.0;
     dab.p_e_after_vitdec = 0.0;
   }
@@ -98,8 +100,9 @@ int main(int argc, char **argv){
   fclose(fh);
   
   fh = fopen("results.log","w+");
-  fprintf(fh,"%f",ana.mean_ber);
-  
+  fprintf(fh,"%f\n",ana.mean_ber);
+  fprintf(fh,"%f",(float)ana.faulty_fibs/(float)ana.received_fibs);
+
   
   return 1;
 }

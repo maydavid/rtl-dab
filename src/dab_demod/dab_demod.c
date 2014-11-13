@@ -186,6 +186,12 @@ int8_t dab_demod(dab_state *dab){
     dab->FIC[i+3072*2] = dab->symbols_demapped[3][i];
   }
 
+
+  /* fault injection */
+  if (dab->p_e_prior_dep>0) {
+    binary_fault_injection(&dab->FIC[0],2304*4,dab->p_e_prior_dep);
+  }
+  
   /* FIC depuncture */
   dab_fic_depuncture(&dab->FIC[2304*0],&dab->FIC_dep[3096*0]);
   dab_fic_depuncture(&dab->FIC[2304*1],&dab->FIC_dep[3096*1]);
@@ -206,9 +212,7 @@ int8_t dab_demod(dab_state *dab){
   /* fault injection after vitdec 
      actually useless as frame has to be practically error free after viterbi 
      at least for DAB w/o Reed Solomon 
-  */
-  /*
-    if (dab->p_e_after_vitdec>0) {
+  *//*   if (dab->p_e_after_vitdec>0) {
     binary_fault_injection(&dab->FIC_dep_dec[0],768*4,dab->p_e_after_vitdec);
     }
   */
@@ -284,6 +288,7 @@ void dab_demod_init(dab_state * dab){
   dab->symbols_dc_fd = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 1536 * 75);
 
   /* make sure to disable fault injection by default */
+  dab->p_e_prior_dep = 0.0f;
   dab->p_e_prior_vitdec = 0.0f;
   dab->p_e_after_vitdec = 0.0f;
   

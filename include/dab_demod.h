@@ -79,6 +79,7 @@ typedef struct{
 
 
   /* fault injection */
+  double p_e_prior_dep;
   double p_e_prior_vitdec;
   double p_e_after_vitdec;
 }dab_state;
