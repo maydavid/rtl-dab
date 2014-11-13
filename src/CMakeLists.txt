@@ -1,7 +1,9 @@
 add_executable(rtldab rtldab.c)
 add_executable(rtldab_test rtldab_test.c)
+add_executable(rtldab_fault_injection rtldab_fault_injection.c)
 target_link_libraries(rtldab rtlsdr dab_demod dab_helper_functions dab_fic_parser pthread dab_analyzer)
 target_link_libraries(rtldab_test rtlsdr dab_demod dab_helper_functions dab_fic_parser dab_analyzer)
+target_link_libraries(rtldab_fault_injection rtlsdr dab_demod dab_helper_functions dab_fic_parser dab_analyzer)
 
 add_subdirectory(dab_demod)
 add_subdirectory(dab_helper)

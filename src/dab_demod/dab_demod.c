@@ -36,7 +36,6 @@ int8_t dab_demod(dab_state *dab){
 
   /* Check for data in fifo */
   if (dab->fifo.count < 196608*3) {
-    //printf("fifo refill\n");
     return 0;
   }
   
@@ -193,12 +192,26 @@ int8_t dab_demod(dab_state *dab){
   dab_fic_depuncture(&dab->FIC[2304*2],&dab->FIC_dep[3096*2]);
   dab_fic_depuncture(&dab->FIC[2304*3],&dab->FIC_dep[3096*3]);
   
+  /* fault injection */
+  if (dab->p_e_prior_vitdec>0) {
+    binary_fault_injection(&dab->FIC_dep[0],3096*4,dab->p_e_prior_vitdec);
+  }
+
   /* Vitdec */
-  
   viterbi( &dab->FIC_dep[3096*0], 3096, &dab->FIC_dep_dec[768*0]);
   viterbi( &dab->FIC_dep[3096*1], 3096, &dab->FIC_dep_dec[768*1]);
   viterbi( &dab->FIC_dep[3096*2], 3096, &dab->FIC_dep_dec[768*2]);
   viterbi( &dab->FIC_dep[3096*3], 3096, &dab->FIC_dep_dec[768*3]);
+
+  /* fault injection after vitdec 
+     actually useless as frame has to be practically error free after viterbi 
+     at least for DAB w/o Reed Solomon 
+  */
+  /*
+    if (dab->p_e_after_vitdec>0) {
+    binary_fault_injection(&dab->FIC_dep_dec[0],768*4,dab->p_e_after_vitdec);
+    }
+  */
 
   /*De-scramble */
   dab_fic_descramble(&dab->FIC_dep_dec[768*0],&dab->FIC_dep_dec_scr[768*0],768);
@@ -269,5 +282,9 @@ void dab_demod_init(dab_state * dab){
   dab->symbols_d = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 2048 * 75);
   dab->symbols_dc = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 1536 * 75);
   dab->symbols_dc_fd = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 1536 * 75);
+
+  /* make sure to disable fault injection by default */
+  dab->p_e_prior_vitdec = 0.0f;
+  dab->p_e_after_vitdec = 0.0f;
   
 }

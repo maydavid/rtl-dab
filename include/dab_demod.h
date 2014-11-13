@@ -76,6 +76,11 @@ typedef struct{
   int f_interl_table[2048];
   int32_t startup_delay;
   uint8_t force_timesync;
+
+
+  /* fault injection */
+  double p_e_prior_vitdec;
+  double p_e_after_vitdec;
 }dab_state;
 
 

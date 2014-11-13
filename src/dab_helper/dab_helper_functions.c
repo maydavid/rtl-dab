@@ -49,3 +49,16 @@ int8_t dab_crc16(uint8_t * in,uint32_t len) {
   return (crc==POLY_CORRECT) ? 0 : 1;
 }
 
+uint8_t binary_fault_injection(uint8_t *in,uint32_t len,double p_e) {
+
+  uint32_t i;
+  double r;
+  for (i=0;i<len;i++) {
+    r = ((double)rand())/RAND_MAX;
+    in[i] = (r>p_e) ? in[i] : !in[i];
+  }
+  
+  return 1;
+
+}
+
