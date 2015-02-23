@@ -91,6 +91,7 @@ int32_t dab_fine_time_sync(fftw_complex * frame){
   fftw_plan p;
   p = fftw_plan_dft_1d(2048, &frame[2656+504], &prs_received_fft[0], FFTW_FORWARD, FFTW_ESTIMATE);
   fftw_execute(p);
+  fftw_destroy_plan(p);
 #if dbg
   FILE *fh1;
   fh1 = fopen("prs_received_fft.dat","w+");
@@ -164,6 +165,7 @@ int32_t dab_fine_time_sync(fftw_complex * frame){
   fftw_plan px;
   px = fftw_plan_dft_1d(1536, &convoluted_prs[0], &convoluted_prs_time[0], FFTW_BACKWARD, FFTW_ESTIMATE);
   fftw_execute(px);
+  fftw_destroy_plan(px);
 #if dbg
   FILE *fh4;
   fh4 = fopen("convoluted_prs_time.dat","w+");
@@ -219,6 +221,7 @@ int32_t dab_coarse_freq_sync_2(fftw_complex * symbols){
     fftw_plan px;
     px = fftw_plan_dft_1d(len, &convoluted_prs[0], &convoluted_prs_time[0], FFTW_BACKWARD, FFTW_ESTIMATE);
     fftw_execute(px);
+    fftw_destroy_plan(px);
     
     
 #if dbg
@@ -289,6 +292,10 @@ double dab_fine_freq_corr(fftw_complex * dab_frame,int32_t fine_timeshift){
 
   ffs = mean / (2 * M_PI) * 1000;
   //printf("\n%f\n",ffs);
+
+  fftw_free(left);
+  fftw_free(right);
+  fftw_free(lr);
     
  return ffs;
 }
