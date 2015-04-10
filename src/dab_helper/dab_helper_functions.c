@@ -49,16 +49,44 @@ int8_t dab_crc16(uint8_t * in,uint32_t len) {
   return (crc==POLY_CORRECT) ? 0 : 1;
 }
 
+
+
+void init_mt64(void) {
+	uint64_t init[4]={UINT64_C(0x12345), UINT64_C(0x23456), UINT64_C(0x34567), UINT64_C(0x45678)}, length=4;
+	init_by_array64(init, length);
+}
+
 uint8_t binary_fault_injection(uint8_t *in,uint32_t len,double p_e) {
 
   uint32_t i;
   double r;
   for (i=0;i<len;i++) {
-    r = ((double)rand())/RAND_MAX;
+    //r = ((double)rand())/RAND_MAX;
+    r = genrand64_real2();
     in[i] = (r>p_e) ? in[i] : !in[i];
   }
   
   return 1;
 
+}
+
+
+uint8_t fftw_complex_precision_reduction(fftw_complex *in,uint32_t len,uint32_t precision) {
+  
+  uint32_t i,b;
+  //  printf("%lf\n",in[0][0]);
+
+
+  for (i=0;i<len;i++) {
+
+    for (b=0;b<(52-precision);b++) {
+      // unset bits
+      *(uint64_t *)&in[i][0] &= ~((uint64_t)1 << b);
+      *(uint64_t *)&in[i][1] &= ~((uint64_t)1 << b);
+    }  
+  }
+  //printf("%lf\n",in[0][0]);
+
+  return 1;
 }
 

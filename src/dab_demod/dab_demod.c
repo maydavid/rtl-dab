@@ -87,6 +87,7 @@ int8_t dab_demod(dab_state *dab){
   fftw_plan p;
   p = fftw_plan_dft_1d(2048, &dab->dab_frame[2656+505+dab->fine_timeshift], dab->symbols[0], FFTW_FORWARD, FFTW_ESTIMATE);
   fftw_execute(p);
+  fftw_destroy_plan(p);
   
   fftw_complex tmp;
     for (i = 0; i < 2048/2; i++)
@@ -115,6 +116,7 @@ int8_t dab_demod(dab_state *dab){
     p = fftw_plan_dft_1d(2048, &dab->dab_frame[2656+(2552*i)+504],
 			 dab->symbols[i], FFTW_FORWARD, FFTW_ESTIMATE);
     fftw_execute(p);
+    fftw_destroy_plan(p);
     for (j = 0; j < 2048/2; j++)
       {
 	tmp[0]     = dab->symbols[i][j][0];

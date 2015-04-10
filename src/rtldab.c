@@ -85,6 +85,7 @@ void print_status(dab_state *dab) {
   fprintf(stderr,"received fibs: %i\n",ana.received_fibs);
   fprintf(stderr,"faulty   fibs: %i\n",ana.faulty_fibs);
   fprintf(stderr,"faulty fib rate: %f\n",(float)ana.faulty_fibs/(float)ana.received_fibs);
+  fprintf(stderr,"channel ber: %f\n",ana.ber);
   fprintf(stderr,"mean channel ber: %f\n",ana.mean_ber);
   
 }
@@ -177,7 +178,8 @@ int main (int argc, char **argv)
   if (argc > 1) {
     dab.frequency = atoi(argv[1]);
   } else {
-    dab.frequency = 220352000;
+    //dab.frequency = 220352000;
+    dab.frequency = 222064000;
   }
   //fprintf(stderr,"%i\n",dab.frequency);
 

@@ -82,6 +82,7 @@ typedef struct{
   double p_e_prior_dep;
   double p_e_prior_vitdec;
   double p_e_after_vitdec;
+  uint32_t bits_dab_frame_mantisse;
 }dab_state;
 
 

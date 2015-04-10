@@ -30,7 +30,7 @@ david.may.muc@googlemail.com
 #include "dab_demod.h"
 #include "dab_fic_parser.h"
 #include "dab_analyzer.h"
-
+#include "dab_helper_functions.h"
 
 
 
@@ -47,7 +47,9 @@ int main(int argc, char **argv){
   
   // open static file
   FILE *fh;
-  fh = fopen("/home/david/projects/rtl-dab/222055_dump.dump","r");
+
+  // init mt
+  init_mt64();
 
   // init demodulator structure
   dab_demod_init(&dab);
@@ -59,15 +61,20 @@ int main(int argc, char **argv){
   dab_analyzer_init(&ana);
 
 
-  if (argc >3) {
-    dab.p_e_prior_dep = atof(argv[1]);
-    dab.p_e_prior_vitdec = atof(argv[2]);
-    dab.p_e_after_vitdec = atof(argv[3]);
+  if (argc > 5) {
+    fh = fopen(argv[1],"r");
+    dab.bits_dab_frame_mantisse = atoi(argv[2]); 
+    dab.p_e_prior_dep = atof(argv[3]);
+    dab.p_e_prior_vitdec = atof(argv[4]);
+    dab.p_e_after_vitdec = atof(argv[5]);
   } else {
+    fh = fopen("/home/david/projects/rtl-dab/222055_dump.dump","r");
+    dab.bits_dab_frame_mantisse = 52;
     dab.p_e_prior_dep = 0.0;
     dab.p_e_prior_vitdec = 0.0;
     dab.p_e_after_vitdec = 0.0;
   }
+
 
   // fill buffer and let the autogain settle
   for (i=0;i<20;i++) {
@@ -75,7 +82,7 @@ int main(int argc, char **argv){
   dab.input_buffer_len = 16*16384;
   }
   
-  for (i=0;i<10;i++) {
+  for (i=0;i<100;i++) {
     // read next dab frame
     fread(dab.input_buffer,1,16*16384,fh);
     dab.input_buffer_len = 16*16384;
