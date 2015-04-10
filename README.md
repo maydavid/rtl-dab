@@ -7,6 +7,8 @@ Features:
 * Simple BER Analysis (more to come)
 * Mode I supported
 
+* Ability to inject faults into the receiver. I need this for my PhD thesis to find out if power could be saved by tolerating faults in the receiver. More info: http://davidmay.org/research.html
+
 ### This project uses snippets from:
 
 * David Crawley https://github.com/chrisa/opendab GPL, v3
