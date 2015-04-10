@@ -47,7 +47,7 @@ int8_t dab_demod(dab_state *dab){
   /* give the AGC some time to settle */
   if (dab->startup_delay<=GAIN_SETTLE_TIME) {
     dab->startup_delay+=1;
-    printf("%i\n",dab->startup_delay);
+    //printf("%i\n",dab->startup_delay);
     return 0;
   }
   
@@ -107,7 +107,10 @@ int8_t dab_demod(dab_state *dab){
   /* fine freq correction */
   dab->fine_freq_shift = dab_fine_freq_corr(dab->dab_frame,dab->fine_timeshift);
 
-  /* d-qpsk */
+  //fftw_complex_precision_reduction(&dab->dab_frame[0],196608,dab->bits_dab_frame_mantisse);
+
+
+  /* fft */
   for (i=0;i<76;i++) {
     p = fftw_plan_dft_1d(2048, &dab->dab_frame[2656+(2552*i)+504],
 			 dab->symbols[i], FFTW_FORWARD, FFTW_ESTIMATE);
@@ -123,7 +126,9 @@ int8_t dab_demod(dab_state *dab){
       }
     
   }
-  //
+
+  //fftw_complex_precision_reduction(&dab->symbols[0][0],76*2048,dab->bits_dab_frame_mantisse);
+  /* d-qpsk */
   for (j=1;j<75;j++) {
     for (i=0;i<2048;i++)
       {
@@ -150,6 +155,9 @@ int8_t dab_demod(dab_state *dab){
     k = 0;
   }
   
+  // fftw_complex_precision_reduction(&dab->symbols_dc[1536],75*1536,dab->bits_dab_frame_mantisse);
+
+
   /* frequency deinterleaving */
   for (i=1;i<75;i++){
     for (j=0;j<1536;j++) {
@@ -166,6 +174,8 @@ int8_t dab_demod(dab_state *dab){
     } 
   }
   
+  // fftw_complex_precision_reduction(&dab->symbols_dc_fd[1536],75*1536,dab->bits_dab_frame_mantisse);
+
   /* demapping */
   for (i=1;i<75;i++){
     for (j=0;j<1536*2;j++){
@@ -178,8 +188,9 @@ int8_t dab_demod(dab_state *dab){
     }
   }
   
-  /* block partitioning */
   
+  
+  /* block partitioning */
   for (i=0;i<1536*2;i++){
     dab->FIC[i+3072*0] = dab->symbols_demapped[1][i];
     dab->FIC[i+3072*1] = dab->symbols_demapped[2][i];
@@ -209,13 +220,24 @@ int8_t dab_demod(dab_state *dab){
   viterbi( &dab->FIC_dep[3096*2], 3096, &dab->FIC_dep_dec[768*2]);
   viterbi( &dab->FIC_dep[3096*3], 3096, &dab->FIC_dep_dec[768*3]);
 
+#if 0
+  for (i=0;i<3096;i++) {
+    printf("%x\n", dab->FIC_dep[i]);
+  }
+  printf("\n");
+  for (i=0;i<768;i++) {
+    printf("%x\n", dab->FIC_dep_dec[i]);
+  }
+#endif
+
   /* fault injection after vitdec 
      actually useless as frame has to be practically error free after viterbi 
      at least for DAB w/o Reed Solomon 
-  *//*   if (dab->p_e_after_vitdec>0) {
-    binary_fault_injection(&dab->FIC_dep_dec[0],768*4,dab->p_e_after_vitdec);
-    }
   */
+  if (dab->p_e_after_vitdec>0) {
+    binary_fault_injection(&dab->FIC_dep_dec[0],768*4,dab->p_e_after_vitdec);
+  }
+  
 
   /*De-scramble */
   dab_fic_descramble(&dab->FIC_dep_dec[768*0],&dab->FIC_dep_dec_scr[768*0],768);
@@ -287,9 +309,12 @@ void dab_demod_init(dab_state * dab){
   dab->symbols_dc = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 1536 * 75);
   dab->symbols_dc_fd = (fftw_complex*) fftw_malloc(sizeof(fftw_complex) * 1536 * 75);
 
+  dab->startup_delay = 0;
+
   /* make sure to disable fault injection by default */
   dab->p_e_prior_dep = 0.0f;
   dab->p_e_prior_vitdec = 0.0f;
   dab->p_e_after_vitdec = 0.0f;
+  dab->bits_dab_frame_mantisse = 52;
   
 }
