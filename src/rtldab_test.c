@@ -40,15 +40,19 @@ int corr_counter;
 Ensemble sinfo;
 Analyzer ana;
 
-int main(void){
+int main(int argc, char **argv){
   int i;
   dab_state dab;
   int frequency = 222055000;
   
   // open static file
   FILE *fh;
-  fh = fopen("/home/david/projects/rtl-dab/222055_dump.dump","r");
-
+  if (argc<2) {
+    fh = fopen("/home/david/projects/rtl-dab/222055_dump.dump","r");
+  }
+  else {
+    fh = fopen(argv[1],"r");
+  }
   // init demodulator structure
   dab_demod_init(&dab);
 
