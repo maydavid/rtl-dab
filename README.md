@@ -15,6 +15,8 @@ Features:
 * Phil Karn http://www.ka9q.net/code/fec/ GPL
 * Andreas Müller https://github.com/andrmuel/gr-dab GPL, v3
 
+* Makoto Matsumoto http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
+
 
 ### Status:
 
