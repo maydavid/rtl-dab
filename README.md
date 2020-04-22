@@ -36,9 +36,10 @@ Features:
 ### usage:
 
  ```
- $ git clone git@github.com:maydavid/rtl-dab.git
+ $ git clone https://github.com/maydavid/rtl-dab.git
  $ cd rtl-dab
  $ cmake .
- $ src/rtl_dab <frequency in Hz>
+ $ make
+ $ ./src/rtl_dab <frequency in Hz>
  ```
  
